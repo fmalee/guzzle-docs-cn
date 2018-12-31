@@ -1,22 +1,16 @@
-.. title:: Guzzle, PHP HTTP client
+.. title:: Guzzle, 基于PHP的HTTP客户端
 
 ====================
-Guzzle Documentation
+Guzzle中文文档
 ====================
 
-Guzzle is a PHP HTTP client that makes it easy to send HTTP requests and
-trivial to integrate with web services.
+Guzzle是一个PHP的HTTP客户端，用来轻而易举地发送请求，并集成到我们的WEB服务上。
 
-- Simple interface for building query strings, POST requests, streaming large
-  uploads, streaming large downloads, using HTTP cookies, uploading JSON data,
-  etc...
-- Can send both synchronous and asynchronous requests using the same interface.
-- Uses PSR-7 interfaces for requests, responses, and streams. This allows you
-  to utilize other PSR-7 compatible libraries with Guzzle.
-- Abstracts away the underlying HTTP transport, allowing you to write
-  environment and transport agnostic code; i.e., no hard dependency on cURL,
-  PHP streams, sockets, or non-blocking event loops.
-- Middleware system allows you to augment and compose client behavior.
+- 接口简单：构建查询语句、POST请求、分流上传下载大文件、使用HTTP cookies、上传JSON数据等等。
+- 发送同步或异步的请求均使用相同的接口。
+- 使用PSR-7接口来请求、响应、分流，允许你使用其他兼容的PSR-7类库与Guzzle共同开发。
+- 抽象了底层的HTTP传输，允许你改变环境以及其他的代码，如：对cURL与PHP的流或socket并非重度依赖，非阻塞事件循环。
+- 中间件系统允许你创建构成客户端行为。
 
 .. code-block:: php
 
@@ -31,7 +25,7 @@ trivial to integrate with web services.
     echo $res->getBody();
     // {"type":"User"...'
 
-    // Send an asynchronous request.
+    // 发送一个异步请求
     $request = new \GuzzleHttp\Psr7\Request('GET', 'http://httpbin.org');
     $promise = $client->sendAsync($request)->then(function ($response) {
         echo 'I completed! ' . $response->getBody();
@@ -39,7 +33,7 @@ trivial to integrate with web services.
     $promise->wait();
 
 
-User Guide
+用户指南
 ==========
 
 .. toctree::

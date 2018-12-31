@@ -1,17 +1,14 @@
 ================
-Guzzle and PSR-7
+Guzzle 与 PSR-7
 ================
 
-Guzzle utilizes PSR-7 as the HTTP message interface. This allows Guzzle to work
-with any other library that utilizes PSR-7 message interfaces.
+Guzzle使用 ``PSR-7`` 作为HTTP消息接口。这允许Guzzle与使用PSR-7消息接口的任何其他库一起工作。
 
-Guzzle is an HTTP client that sends HTTP requests to a server and receives HTTP
-responses. Both requests and responses are referred to as messages.
+Guzzle是一个HTTP客户端，它将HTTP请求发送到服务器并接收HTTP响应。请求和响应都称为 **消息**。
 
-Guzzle relies on the ``guzzlehttp/psr7`` Composer package for its message
-implementation of PSR-7.
+Guzzle依赖于 ``guzzlehttp/psr7`` Composer包来实现 ``PSR-7`` 的消息。
 
-You can create a request using the ``GuzzleHttp\Psr7\Request`` class:
+你可以使用 ``GuzzleHttp\Psr7\Request`` 类来创建一个请求：
 
 .. code-block:: php
 
@@ -19,41 +16,38 @@ You can create a request using the ``GuzzleHttp\Psr7\Request`` class:
 
     $request = new Request('GET', 'http://httpbin.org/get');
 
-    // You can provide other optional constructor arguments.
+    // 你还可以提供其他可选的构造函数参数
     $headers = ['X-Foo' => 'Bar'];
     $body = 'hello!';
     $request = new Request('PUT', 'http://httpbin.org/put', $headers, $body);
 
-You can create a response using the ``GuzzleHttp\Psr7\Response`` class:
+你可以使用 ``GuzzleHttp\Psr7\Response`` 类来创建一个响应：
 
 .. code-block:: php
 
     use GuzzleHttp\Psr7\Response;
 
-    // The constructor requires no arguments.
+    // 该构造函数不添加参数
     $response = new Response();
     echo $response->getStatusCode(); // 200
     echo $response->getProtocolVersion(); // 1.1
 
-    // You can supply any number of optional arguments.
+    // 你还可以提供任意数量的可选参数
     $status = 200;
     $headers = ['X-Foo' => 'Bar'];
     $body = 'hello!';
     $protocol = '1.1';
     $response = new Response($status, $headers, $body, $protocol);
 
-
-Headers
+标头
 =======
 
-Both request and response messages contain HTTP headers.
+请求和响应消息 **都** 包含HTTP标头。
 
-
-Accessing Headers
+访问标头
 -----------------
 
-You can check if a request or response has a specific header using the
-``hasHeader()`` method.
+你可以使用 ``hasHeader()`` 方法检查请求或响应是否具有特定标头。
 
 .. code-block:: php
 
@@ -65,6 +59,7 @@ You can check if a request or response has a specific header using the
         echo 'It is there';
     }
 
+你可以使用 ``getHeader()`` 方法将所有标头值检索为字符串数组。
 You can retrieve all the header values as an array of strings using
 ``getHeader()``.
 
@@ -72,11 +67,10 @@ You can retrieve all the header values as an array of strings using
 
     $request->getHeader('X-Foo'); // ['bar']
 
-    // Retrieving a missing header returns an empty array.
+    // 检索缺失的标头会返回一个空数组。
     $request->getHeader('X-Bar'); // []
 
-You can iterate over the headers of a message using the ``getHeaders()``
-method.
+你可以使用 ``getHeaders()`` 方法来迭代消息的标头。
 
 .. code-block:: php
 
@@ -84,19 +78,16 @@ method.
         echo $name . ': ' . implode(', ', $values) . "\r\n";
     }
 
-
-Complex Headers
+复杂标头
 ---------------
 
-Some headers contain additional key value pair information. For example, Link
-headers contain a link and several key value pairs:
+某些标头包含其他键值对信息。例如，``Link`` 标头包含一个链接和几个键值对：
 
 ::
 
     <http://foo.com>; rel="thing"; type="image/jpeg"
 
-Guzzle provides a convenience feature that can be used to parse these types of
-headers:
+Guzzle提供了一个便利功能，可用于解析这些类型的标头：
 
 .. code-block:: php
 
@@ -109,7 +100,7 @@ headers:
     $parsed = Psr7\parse_header($request->getHeader('Link'));
     var_export($parsed);
 
-Will output:
+将输出：
 
 .. code-block:: php
 
@@ -122,39 +113,31 @@ Will output:
       ),
     )
 
-The result contains a hash of key value pairs. Header values that have no key
-(i.e., the link) are indexed numerically while headers parts that form a key
-value pair are added as a key value pair.
+结果包含一个键值对的散列。没有键的标头值值（即链接）以数字方式索引，而形成键值对的标头部分则作为键值对添加。
 
-
-Body
+正文
 ====
 
-Both request and response messages can contain a body.
+请求和响应消息 **都** 可以包含正文。
 
-You can retrieve the body of a message using the ``getBody()`` method:
+你可以使用 ``getBody()`` 方法检索消息的正文：
 
 .. code-block:: php
 
     $response = GuzzleHttp\get('http://httpbin.org/get');
     echo $response->getBody();
-    // JSON string: { ... }
+    // JSON字符串: { ... }
 
-The body used in request and response objects is a
-``Psr\Http\Message\StreamInterface``. This stream is used for both
-uploading data and downloading data. Guzzle will, by default, store the body of
-a message in a stream that uses PHP temp streams. When the size of the body
-exceeds 2 MB, the stream will automatically switch to storing data on disk
-rather than in memory (protecting your application from memory exhaustion).
+请求和响应对象中使用的正文是 ``Psr\Http\Message\StreamInterface``。
+此流用于上传数据和下载数据。默认情况下，Guzzle会将消息正文存储在使用PHP临时流的流中。
+当正文的大小超过 ``2MB`` 时，流将自动将数据切换存储在磁盘，而不是内存中（保护应用以免内存耗尽）。
 
-The easiest way to create a body for a message is using the ``stream_for``
-function from the ``GuzzleHttp\Psr7`` namespace --
-``GuzzleHttp\Psr7\stream_for``. This function accepts strings, resources,
-callables, iterators, other streamables, and returns an instance of
-``Psr\Http\Message\StreamInterface``.
+为消息创建正文的最简单方法是使用 ``GuzzleHttp\Psr7`` 命名空间中的 ``stream_for``
+函数(``GuzzleHttp\Psr7\stream_for``)。
+此函数接受字符串、资源、回调、迭代器以及其他流(Stremable)，并返回一个
+``Psr\Http\Message\StreamInterface`` 实例。
 
-The body of a request or response can be cast to a string or you can read and
-write bytes off of the stream as needed.
+可以将请求或响应的正文强制转换为字符串，也可以根据需要从流中读取和写入字节。
 
 .. code-block:: php
 
@@ -166,69 +149,58 @@ write bytes off of the stream as needed.
     echo $response->getBody()->read(1024);
     var_export($response->eof());
 
-
-Requests
+请求
 ========
 
-Requests are sent from a client to a server. Requests include the method to
-be applied to a resource, the identifier of the resource, and the protocol
-version to use.
+请求从一个客户端发送到一个服务器。请求包括要应用于资源的方法，资源的标识符以及要使用的协议版本。
 
-
-Request Methods
+请求方法
 ---------------
 
-When creating a request, you are expected to provide the HTTP method you wish
-to perform. You can specify any method you'd like, including a custom method
-that might not be part of RFC 7231 (like "MOVE").
+创建请求时，你需要提供要执行的HTTP方法。你可以指定任何你想要的方法，包括可能不属于
+RFC 7231 的自定义方法（如“MOVE”）。
 
 .. code-block:: php
 
-    // Create a request using a completely custom HTTP method
+    // 使用完全自定义的HTTP方法来创建请求
     $request = new \GuzzleHttp\Psr7\Request('MOVE', 'http://httpbin.org/move');
 
     echo $request->getMethod();
     // MOVE
 
-You can create and send a request using methods on a client that map to the
-HTTP method you wish to use.
+你可以使用映射到你希望使用的HTTP方法的客户端上的方法来创建和发送请求。
 
-:GET: ``$client->get('http://httpbin.org/get', [/** options **/])``
-:POST: ``$client->post('http://httpbin.org/post', [/** options **/])``
-:HEAD: ``$client->head('http://httpbin.org/get', [/** options **/])``
-:PUT: ``$client->put('http://httpbin.org/put', [/** options **/])``
-:DELETE: ``$client->delete('http://httpbin.org/delete', [/** options **/])``
-:OPTIONS: ``$client->options('http://httpbin.org/get', [/** options **/])``
-:PATCH: ``$client->patch('http://httpbin.org/put', [/** options **/])``
+:GET: ``$client->get('http://httpbin.org/get', [/** 选项 **/])``
+:POST: ``$client->post('http://httpbin.org/post', [/** 选项 **/])``
+:HEAD: ``$client->head('http://httpbin.org/get', [/** 选项 **/])``
+:PUT: ``$client->put('http://httpbin.org/put', [/** 选项 **/])``
+:DELETE: ``$client->delete('http://httpbin.org/delete', [/** 选项 **/])``
+:OPTIONS: ``$client->options('http://httpbin.org/get', [/** 选项 **/])``
+:PATCH: ``$client->patch('http://httpbin.org/put', [/** 选项 **/])``
 
-For example:
+例如：
 
 .. code-block:: php
 
     $response = $client->patch('http://httpbin.org/patch', ['body' => 'content']);
 
-
-Request URI
+请求URI
 -----------
 
-The request URI is represented by a ``Psr\Http\Message\UriInterface`` object.
-Guzzle provides an implementation of this interface using the
-``GuzzleHttp\Psr7\Uri`` class.
+请求URI由一个 ``Psr\Http\Message\UriInterface`` 对象表示。Guzzle使用
+``GuzzleHttp\Psr7\Uri`` 类来提供此接口的实现。
 
-When creating a request, you can provide the URI as a string or an instance of
-``Psr\Http\Message\UriInterface``.
+创建请求时，你可以将URI作为字符串或 ``Psr\Http\Message\UriInterface`` 实例来提供。
 
 .. code-block:: php
 
     $response = $client->request('GET', 'http://httpbin.org/get?q=foo');
 
-
-Scheme
+模式
 ------
 
-The `scheme <http://tools.ietf.org/html/rfc3986#section-3.1>`_ of a request
-specifies the protocol to use when sending the request. When using Guzzle, the
-scheme can be set to "http" or "https".
+一个请求的 `scheme <http://tools.ietf.org/html/rfc3986#section-3.1>`_
+用以指定发送请求时要使用的协议。使用Guzzle时，模式可以设置为 ``http`` 或 ``https``。
 
 .. code-block:: php
 
@@ -236,12 +208,10 @@ scheme can be set to "http" or "https".
     echo $request->getUri()->getScheme(); // http
     echo $request->getUri(); // http://httpbin.org
 
-
-Host
+主机
 ----
 
-The host is accessible using the URI owned by the request or by accessing the
-Host header.
+可以使用请求拥有的URI或访问 ``Host`` 标头来访问主机。
 
 .. code-block:: php
 
@@ -249,11 +219,10 @@ Host header.
     echo $request->getUri()->getHost(); // httpbin.org
     echo $request->getHeader('Host'); // httpbin.org
 
-
-Port
+端口
 ----
 
-No port is necessary when using the "http" or "https" schemes.
+使用 ``http`` 或 ``https`` 模式时无需端口。
 
 .. code-block:: php
 
@@ -262,51 +231,43 @@ No port is necessary when using the "http" or "https" schemes.
     echo $request->getUri(); // http://httpbin.org:8080
 
 
-Path
+路径
 ----
 
-The path of a request is accessible via the URI object.
+可以通过URI对象来访问请求的路径。
 
 .. code-block:: php
 
     $request = new Request('GET', 'http://httpbin.org/get');
     echo $request->getUri()->getPath(); // /get
 
-The contents of the path will be automatically filtered to ensure that only
-allowed characters are present in the path. Any characters that are not allowed
-in the path will be percent-encoded according to
+将自动过滤路径的内容以确保路径中仅存在允许的字符。路径中不允许的任何字符都将根据
 `RFC 3986 section 3.3 <https://tools.ietf.org/html/rfc3986#section-3.3>`_
+进行百分比编码(percent-encoded)。
 
-
-Query string
+查询字符串
 ------------
 
-The query string of a request can be accessed using the ``getQuery()`` of the
-URI object owned by the request.
+可以使用请求拥有的URI对象的 ``getQuery()`` 方法来访问请求的查询字符串。
 
 .. code-block:: php
 
     $request = new Request('GET', 'http://httpbin.org/?foo=bar');
     echo $request->getUri()->getQuery(); // foo=bar
 
-The contents of the query string will be automatically filtered to ensure that
-only allowed characters are present in the query string. Any characters that
-are not allowed in the query string will be percent-encoded according to
+将自动过滤查询字符串的内容以确保查询字符串中仅存在允许的字符。查询字符串中不允许的任何字符都将根据
 `RFC 3986 section 3.4 <https://tools.ietf.org/html/rfc3986#section-3.4>`_
+进行百分比编码(percent-encoded)。
 
-
-Responses
+回应
 =========
 
-Responses are the HTTP messages a client receives from a server after sending
-an HTTP request message.
+响应是客户端在发送HTTP请求消息后从服务器接收的HTTP消息。
 
-
-Start-Line
+起始行
 ----------
 
-The start-line of a response contains the protocol and protocol version,
-status code, and reason phrase.
+一个响应的起始行(start-line)包含协议、协议版本、状态代码和原因短语。
 
 .. code-block:: php
 
@@ -317,65 +278,47 @@ status code, and reason phrase.
     echo $response->getReasonPhrase(); // OK
     echo $response->getProtocolVersion(); // 1.1
 
-
-Body
+正文
 ----
 
-As described earlier, you can get the body of a response using the
-``getBody()`` method.
+如前所述，你可以使用 ``getBody()`` 方法来获取响应的正文。
 
 .. code-block:: php
 
     $body = $response->getBody();
     echo $body;
-    // Cast to a string: { ... }
+    // 转换为字符串: { ... }
     $body->seek(0);
     // Rewind the body
     $body->read(1024);
-    // Read bytes of the body
+    // 读取正文的字节
 
-
-Streams
+流
 =======
 
-Guzzle uses PSR-7 stream objects to represent request and response message
-bodies. These stream objects allow you to work with various types of data all
-using a common interface.
+Guzzle使用PSR-7流对象来表示请求和响应的消息正文。这些流对象允许你使用通用接口来处理各种类型的数据。
 
-HTTP messages consist of a start-line, headers, and a body. The body of an HTTP
-message can be very small or extremely large. Attempting to represent the body
-of a message as a string can easily consume more memory than intended because
-the body must be stored completely in memory. Attempting to store the body of a
-request or response in memory would preclude the use of that implementation from
-being able to work with large message bodies. The StreamInterface is used in
-order to hide the implementation details of where a stream of data is read from
-or written to.
+HTTP消息由 **起始行**、**标头** 和 **正文** 组成。HTTP消息的正文可能非常小或非常大。
+尝试将消息的正文表示为字符串很容易消耗比预期更多的内存，因为正文必须完全存储在内存中。
+尝试将请求或响应的正文存储在内存中将阻止使用能够使用大型消息正文的那些实现。
+而 ``StreamInterface`` 用于隐藏读取或写入数据流的位置的实现细节。
 
-The PSR-7 ``Psr\Http\Message\StreamInterface`` exposes several methods
-that enable streams to be read from, written to, and traversed effectively.
+PSR-7的 ``Psr\Http\Message\StreamInterface`` 暴露了几种方法，可以有效地读取、写入和遍历流。
 
-Streams expose their capabilities using three methods: ``isReadable()``,
-``isWritable()``, and ``isSeekable()``. These methods can be used by stream
-collaborators to determine if a stream is capable of their requirements.
+数据流通过三种方法暴露自己的能力：``isReadable()``、``isWritable()`` 以及
+``isSeekable()``。流协作者(collaborator)可以使用这些方法来确定一个流是否能够满足其要求。
 
-Each stream instance has various capabilities: they can be read-only,
-write-only, read-write, allow arbitrary random access (seeking forwards or
-backwards to any location), or only allow sequential access (for example in the
-case of a socket or pipe).
+每个流实例都具有各种功能：它们可以是只读、只写、读写、允许任意随机访问（向前或向后来寻找任何位置），或仅允许顺序访问（例如在套接字或管道的情况下）。
 
-Guzzle uses the ``guzzlehttp/psr7`` package to provide stream support. More
-information on using streams, creating streams, converting streams to PHP
-stream resource, and stream decorators can be found in the
-`Guzzle PSR-7 documentation <https://github.com/guzzle/psr7/blob/master/README.md>`_.
+Guzzle使用 ``guzzlehttp/psr7`` 包提供流支持。有关使用流、创建流、将流转换为PHP流资源以及流装饰器的更多信息，请参阅
+`Guzzle PSR-7文档 <https://github.com/guzzle/psr7/blob/master/README.md>`_。
 
-
-Creating Streams
+创建流
 ----------------
 
-The best way to create a stream is using the ``GuzzleHttp\Psr7\stream_for``
-function. This function accepts strings, resources returned from ``fopen()``,
-an object that implements ``__toString()``, iterators, callables, and instances
-of ``Psr\Http\Message\StreamInterface``.
+创建流的最佳方法是使用 ``GuzzleHttp\Psr7\stream_for`` 函数。此函数接受字符串、从 ``fopen()``
+中返回的资源、实现 ``__toString()`` 的对象、迭代器、回调以及和
+``Psr\Http\Message\StreamInterface`` 实例。
 
 .. code-block:: php
 
@@ -383,7 +326,7 @@ of ``Psr\Http\Message\StreamInterface``.
 
     $stream = Psr7\stream_for('string data');
     echo $stream;
-    // string data
+    // 字符串数据
     echo $stream->read(3);
     // str
     echo $stream->getContents();
@@ -393,9 +336,8 @@ of ``Psr\Http\Message\StreamInterface``.
     var_export($stream->tell());
     // 11
 
-You can create streams from iterators. The iterator can yield any number of
-bytes per iteration. Any excess bytes returned by the iterator that were not
-requested by a stream consumer will be buffered until a subsequent read.
+你可以从迭代器创建流。迭代器每次迭代可以产生(yield)任意数量的字节。
+迭代器返回的任何未被流消费者请求的多余字节将被缓冲，直到后续读取。
 
 .. code-block:: php
 
@@ -411,14 +353,12 @@ requested by a stream consumer will be buffered until a subsequent read.
     $stream = Psr7\stream_for($iter);
     echo $stream->read(3); // ...
 
-
-Metadata
+元数据
 --------
 
-Streams expose stream metadata through the ``getMetadata()`` method. This
-method provides the data you would retrieve when calling PHP's
-`stream_get_meta_data() function <http://php.net/manual/en/function.stream-get-meta-data.php>`_,
-and can optionally expose other custom data.
+流通过 ``getMetadata()`` 方法暴露流元数据。此方法提供在调用PHP的
+`stream_get_meta_data()函数 <http://php.net/manual/en/function.stream-get-meta-data.php>`_
+时将检索的数据，并且可以选择暴露其他自定义数据。
 
 .. code-block:: php
 
@@ -435,13 +375,10 @@ and can optionally expose other custom data.
     var_export($stream->isSeekable());
     // true
 
-
-Stream Decorators
+流装饰器
 -----------------
 
-Adding custom functionality to streams is very simple with stream decorators.
-Guzzle provides several built-in decorators that provide additional stream
-functionality.
+使用流装饰器时，向流添加自定义功能非常简单。Guzzle提供了几个内置装饰器，可提供额外的流功能。
 
 - `AppendStream <https://github.com/guzzle/psr7#appendstream>`_
 - `BufferStream <https://github.com/guzzle/psr7#bufferstream>`_

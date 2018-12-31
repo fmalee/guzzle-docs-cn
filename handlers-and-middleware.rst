@@ -1,23 +1,20 @@
 =======================
-Handlers and Middleware
+处理器和中间件
 =======================
 
-Guzzle clients use a handler and middleware system to send HTTP requests.
+Guzzle客户端使用处理器和中间件系统来发送HTTP请求。
 
-Handlers
+处理器
 ========
 
-A handler function accepts a ``Psr\Http\Message\RequestInterface`` and array of
-request options and returns a ``GuzzleHttp\Promise\PromiseInterface`` that is
-fulfilled with a ``Psr\Http\Message\ResponseInterface`` or rejected with an
-exception.
+一个处理器函数接受一个 ``Psr\Http\Message\RequestInterface``
+和一个请求选项数组，并返回一个用 ``Psr\Http\Message\ResponseInterface`` 填充的
+``GuzzleHttp\Promise\PromiseInterface``，或被一个异常拒绝。
 
-You can provide a custom handler to a client using the ``handler`` option of
-a client constructor. It is important to understand that several request
-options used by Guzzle require that specific middlewares wrap the handler used
-by the client. You can ensure that the handler you provide to a client uses the
-default middlewares by wrapping the handler in the
-``GuzzleHttp\HandlerStack::create(callable $handler = null)`` static method.
+你可以使用客户端构造函数的 ``handler`` 选项为客户端提供一个自定义处理器。
+重要的是要理解Guzzle使用的几个请求选项要求用特定的中间件来封装客户端要使用的处理器。
+你可以通过在 ``GuzzleHttp\HandlerStack::create(callable $handler = null)``
+静态方法中封装处理器来确保你提供给客户端的处理器会使用默认中间件。
 
 .. code-block:: php
 
@@ -26,50 +23,42 @@ default middlewares by wrapping the handler in the
     use GuzzleHttp\Handler\CurlHandler;
 
     $handler = new CurlHandler();
-    $stack = HandlerStack::create($handler); // Wrap w/ middleware
+    $stack = HandlerStack::create($handler); // 封装 w/ 中间件
     $client = new Client(['handler' => $stack]);
 
-The ``create`` method adds default handlers to the ``HandlerStack``. When the
-``HandlerStack`` is resolved, the handlers will execute in the following order:
+``create`` 方法将默认处理器添加到 ``HandlerStack``。当 ``HandlerStack``
+被解析后(resolved)，这些处理器将按照以下顺序执行：
 
-1. Sending request:
+1. 发送请求：
 
-  1. ``http_errors`` - No op when sending a request. The response status code
-     is checked in the response processing when returning a response promise up
-     the stack.
-  2. ``allow_redirects`` - No op when sending a request. Following redirects
-     occurs when a response promise is being returned up the stack.
-  3. ``cookies`` - Adds cookies to requests.
-  4. ``prepare_body`` - The body of an HTTP request will be prepared (e.g.,
-     add default headers like Content-Length, Content-Type, etc.).
-  5. <send request with handler>
+  1. ``http_errors`` - 发送一个请求时没有操作。
+     当一个响应Promise返回到堆栈时，会在响应处理中检查响应状态代码。
+  2. ``allow_redirects`` - 发送一个请求时没有操作。当一个响应Promise返回到堆栈时，会发生重定向。
+  3. ``cookies`` - 为请求添加Cookie。
+  4. ``prepare_body`` - 将预设HTTP请求的主体（例如，添加
+     ``Content-Length``、``Content-Type`` 等默认标头）。
+  5. <使用处理器发送请求>
 
-2. Processing response:
+2. 处理响应：
 
-  1. ``prepare_body`` - no op on response processing.
-  2. ``cookies`` - extracts response cookies into the cookie jar.
-  3. ``allow_redirects`` - Follows redirects.
-  4. ``http_errors`` - throws exceptions when the response status code ``>=``
-     300.
+  1. ``prepare_body`` - 没有关于响应处理的操作。
+  2. ``cookies`` - 将响应Cookie提取到Cookie Jar中。
+  3. ``allow_redirects`` - 遵循重定向。
+  4. ``http_errors`` - 当响应状态码 ``>=`` 300时抛出异常。
 
-When provided no ``$handler`` argument, ``GuzzleHttp\HandlerStack::create()``
-will choose the most appropriate handler based on the extensions available on
-your system.
+如果没有提供 ``$handler`` 参数，``GuzzleHttp\HandlerStack::create()``
+将根据你的系统上可用的扩展来选择最合适的处理器。
 
 .. important::
 
-    The handler provided to a client determines how request options are applied
-    and utilized for each request sent by a client. For example, if you do not
-    have a cookie middleware associated with a client, then setting the
-    ``cookies`` request option will have no effect on the request.
+    提供给客户端的处理器确定了如何为客户端发送的每个请求来应用和使用请求选项。
+    例如，如果未将Cookie中间件与客户端关联，则设置 ``cookies``
+    请求选项将不会对请求产生任何影响。
 
-
-Middleware
+中间件
 ==========
 
-Middleware augments the functionality of handlers by invoking them in the
-process of generating responses. Middleware is implemented as a higher order
-function that takes the following form.
+中间件通过在生成响应的过程中调用它们来增强处理器的功能。中间件实现为一个高阶函数，采用以下形式：
 
 .. code-block:: php
 
@@ -84,14 +73,12 @@ function that takes the following form.
         };
     }
 
-Middleware functions return a function that accepts the next handler to invoke.
-This returned function then returns another function that acts as a composed
-handler-- it accepts a request and options, and returns a promise that is
-fulfilled with a response. Your composed middleware can modify the request,
-add custom request options, and modify the promise returned by the downstream
-handler.
+中间件函数返回一个函数，该函数接受下一个要调用的处理器。
+这个返回的函数接着返回另一个充当组合(composed)处理器的函数 --
+它接受一个请求和选项，并返回一个用响应填充的Promise。
+你的组合的中间件可以修改请求、添加自定义请求选项，以及修改下游处理器返回的Promise。
 
-Here's an example of adding a header to each request.
+这是为每个请求都添加一个标头的示例：
 
 .. code-block:: php
 
@@ -110,8 +97,7 @@ Here's an example of adding a header to each request.
         };
     }
 
-Once a middleware has been created, you can add it to a client by either
-wrapping the handler used by the client or by decorating a handler stack.
+一旦创建了中间件，你可以通过封装客户端使用的处理器或通过装饰一个处理器堆栈来将其添加到客户端。
 
 .. code-block:: php
 
@@ -124,11 +110,9 @@ wrapping the handler used by the client or by decorating a handler stack.
     $stack->push(add_header('X-Foo', 'bar'));
     $client = new Client(['handler' => $stack]);
 
-Now when you send a request, the client will use a handler composed with your
-added middleware, adding a header to each request.
+现在，当你发送一个请求时，客户端将使用由你添加的中间件组成的处理器，来为每个请求添加标头。
 
-Here's an example of creating a middleware that modifies the response of the
-downstream handler. This example adds a header to the response.
+以下是创建修改下游处理器响应的中间件的示例。此示例为响应添加一个标头。
 
 .. code-block:: php
 
@@ -160,9 +144,8 @@ downstream handler. This example adds a header to the response.
     $stack->push(add_response_header('X-Foo', 'bar'));
     $client = new Client(['handler' => $stack]);
 
-Creating a middleware that modifies a request is made much simpler using the
-``GuzzleHttp\Middleware::mapRequest()`` middleware. This middleware accepts
-a function that takes the request argument and returns the request to send.
+使用 ``GuzzleHttp\Middleware::mapRequest()`` 中间件可以更加简单的创建一个用于修改请求的中间件。
+此中间件接受一个请求参数并返回要发送的请求的函数。
 
 .. code-block:: php
 
@@ -181,8 +164,7 @@ a function that takes the request argument and returns the request to send.
 
     $client = new Client(['handler' => $stack]);
 
-Modifying a response is also much simpler using the
-``GuzzleHttp\Middleware::mapResponse()`` middleware.
+使用 ``GuzzleHttp\Middleware::mapResponse()`` 中间件使得修改响应更加简单。
 
 .. code-block:: php
 
@@ -201,15 +183,14 @@ Modifying a response is also much simpler using the
 
     $client = new Client(['handler' => $stack]);
 
-
-HandlerStack
+处理器堆栈
 ============
 
-A handler stack represents a stack of middleware to apply to a base handler
-function. You can push middleware to the stack to add to the top of the stack,
-and unshift middleware onto the stack to add to the bottom of the stack. When
-the stack is resolved, the handler is pushed onto the stack. Each value is
-then popped off of the stack, wrapping the previous value popped off of the
+处理器堆栈表示一个要应用于基本处理器函数的中间件堆栈。
+你可以将中间件推送(push)到堆栈以将其添加到堆栈的顶部，也可以将中间件卸载(unshift)到堆栈中以将其添加到堆栈的底部。
+堆栈被解析后，该处理器将被推送到堆栈。然后从堆栈中弹出(popped)每个值，并封装从堆栈中弹出的前一个值。
+When the stack is resolved, the handler is pushed onto the stack.
+Each value is then popped off of the stack, wrapping the previous value popped off of the
 stack.
 
 .. code-block:: php
@@ -249,45 +230,40 @@ stack.
     $client->request('GET', 'http://httpbin.org/');
     // echoes '0ABC';
 
-You can give middleware a name, which allows you to add middleware before
-other named middleware, after other named middleware, or remove middleware
-by name.
+你可以为中间件提供一个名称，以允许你在其他命名的中间件前面、后面添加中间件，或者按名称来移除中间件。
 
 .. code-block:: php
 
     use Psr\Http\Message\RequestInterface;
     use GuzzleHttp\Middleware;
 
-    // Add a middleware with a name
+    // 使用名称来添加一个中间件
     $stack->push(Middleware::mapRequest(function (RequestInterface $r) {
         return $r->withHeader('X-Foo', 'Bar');
     }, 'add_foo');
 
-    // Add a middleware before a named middleware (unshift before).
+    // 在命名的中间件之前添加中间件(unshift before).
     $stack->before('add_foo', Middleware::mapRequest(function (RequestInterface $r) {
         return $r->withHeader('X-Baz', 'Qux');
     }, 'add_baz');
 
-    // Add a middleware after a named middleware (pushed after).
+    // 在命名的中间件之后添加一个中间件 (pushed after)
     $stack->after('add_baz', Middleware::mapRequest(function (RequestInterface $r) {
         return $r->withHeader('X-Lorem', 'Ipsum');
     });
 
-    // Remove a middleware by name
+    // 按名称移除中间件
     $stack->remove('add_foo');
 
 
-Creating a Handler
+创建处理器
 ==================
 
-As stated earlier, a handler is a function accepts a
-``Psr\Http\Message\RequestInterface`` and array of request options and returns
-a ``GuzzleHttp\Promise\PromiseInterface`` that is fulfilled with a
-``Psr\Http\Message\ResponseInterface`` or rejected with an exception.
+如前所述，一个处理器是一个函数，它接受一个 ``Psr\Http\Message\RequestInterface``
+和一个请求选项数组，并返回一个用 ``Psr\Http\Message\ResponseInterface`` 填充的
+``GuzzleHttp\Promise\PromiseInterface``，或被一个异常拒绝。
 
-A handler is responsible for applying the following :doc:`request-options`.
-These request options are a subset of request options called
-"transfer options".
+一个处理器负责应用以下 :doc:`request-options`。这些请求选项是称为“传输选项”的请求选项的子集。
 
 - :ref:`cert-option`
 - :ref:`connect_timeout-option`

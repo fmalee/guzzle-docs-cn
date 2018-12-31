@@ -1,20 +1,15 @@
 ==========
-Quickstart
+快速入门
 ==========
 
-This page provides a quick introduction to Guzzle and introductory examples.
-If you have not already installed, Guzzle, head over to the :ref:`installation`
-page.
+该页面提供了Guzzle的快速入门以及列子，如果你还没有安装Guzzle请前往 :ref:`installation` 页面。
 
-
-Making a Request
+创建请求
 ================
 
-You can send requests with Guzzle using a ``GuzzleHttp\ClientInterface``
-object.
+你可以使用Guzzle的 ``GuzzleHttp\ClientInterface`` 对象来发送请求。
 
-
-Creating a Client
+创建客户端
 -----------------
 
 .. code-block:: php
@@ -22,37 +17,33 @@ Creating a Client
     use GuzzleHttp\Client;
 
     $client = new Client([
-        // Base URI is used with relative requests
+        // 基础URI使用相对的请求
         'base_uri' => 'http://httpbin.org',
-        // You can set any number of default request options.
+        // 可以设置任意数量的默认请求选项
         'timeout'  => 2.0,
     ]);
 
-Clients are immutable in Guzzle 6, which means that you cannot change the defaults used by a client after it's created.
+客户端在Guzzle6中是不可变的，这意味着你无法在客户端被创建后更改其使用的默认值。
 
-The client constructor accepts an associative array of options:
+客户端构造函数接受一个关联的选项数组：
 
 ``base_uri``
-    (string|UriInterface) Base URI of the client that is merged into relative
-    URIs. Can be a string or instance of UriInterface. When a relative URI
-    is provided to a client, the client will combine the base URI with the
-    relative URI using the rules described in
-    `RFC 3986, section 2 <http://tools.ietf.org/html/rfc3986#section-5.2>`_.
+    (string|UriInterface) 基础URI用来合并到相关URI，可以是一个字符串或者 ``UriInterface`` 实例。
+    当提供了一个相对的URI，则将合并到基础URI，遵循的规则请参考 `RFC 3986, section 2 <http://tools.ietf.org/html/rfc3986#section-5.2>`_。
 
     .. code-block:: php
 
-        // Create a client with a base URI
+        // 使用一个基础URI来创建客户端
         $client = new GuzzleHttp\Client(['base_uri' => 'https://foo.com/api/']);
-        // Send a request to https://foo.com/api/test
+        // 发送一个请求到 https://foo.com/api/test
         $response = $client->request('GET', 'test');
-        // Send a request to https://foo.com/root
+        // 发送一个请求到 https://foo.com/root
         $response = $client->request('GET', '/root');
 
-    Don't feel like reading RFC 3986? Here are some quick examples on how a
-    ``base_uri`` is resolved with another URI.
+    不想阅读 RFC 3986？这里有一些关于使用他URI来解析 ``base_uri`` 的快速例子：
 
     =======================  ==================  ===============================
-    base_uri                 URI                 Result
+    base_uri                 URI                 结果
     =======================  ==================  ===============================
     ``http://foo.com``       ``/bar``            ``http://foo.com/bar``
     ``http://foo.com/foo``   ``/bar``            ``http://foo.com/bar``
@@ -63,22 +54,17 @@ The client constructor accepts an associative array of options:
     =======================  ==================  ===============================
 
 ``handler``
-    (callable) Function that transfers HTTP requests over the wire. The
-    function is called with a ``Psr7\Http\Message\RequestInterface`` and array
-    of transfer options, and must return a
-    ``GuzzleHttp\Promise\PromiseInterface`` that is fulfilled with a
-    ``Psr7\Http\Message\ResponseInterface`` on success. ``handler`` is a
-    constructor only option that cannot be overridden in per/request options.
+    (callable) 传输HTTP请求的回调函数。该函数被调用的时候包含一个 ``Psr7\Http\Message\RequestInterface``
+    以及传输选项数组，并且必须返回 ``GuzzleHttp\Promise\PromiseInterface``，成功的话使用
+    ``Psr7\Http\Message\ResponseInterface`` 填充。``handler`` 是一个构造方法，不能在请求参数里被重写。
 
 ``...``
-    (mixed) All other options passed to the constructor are used as default
-    request options with every request created by the client.
+    (mixed) 构造方法中传入的其他所有参数都被用来当作每次请求的默认参数。
 
-
-Sending Requests
+发送请求
 ----------------
 
-Magic methods on the client make it easy to send synchronous requests:
+客户端的魔术方法可以很容易的发送同步请求：
 
 .. code-block:: php
 
@@ -90,8 +76,7 @@ Magic methods on the client make it easy to send synchronous requests:
     $response = $client->post('http://httpbin.org/post');
     $response = $client->put('http://httpbin.org/put');
 
-You can create a request and then send the request with the client when you're
-ready:
+你可以创建一个请求，一切就绪后再将请求传送给客户端：
 
 .. code-block:: php
 
@@ -100,19 +85,14 @@ ready:
     $request = new Request('PUT', 'http://httpbin.org/put');
     $response = $client->send($request, ['timeout' => 2]);
 
-Client objects provide a great deal of flexibility in how request are
-transferred including default request options, default handler stack middleware
-that are used by each request, and a base URI that allows you to send requests
-with relative URIs.
+``Client`` 对象为传输请求提供了非常灵活的处理器方式，包括请求参数、每次请求使用的中间件以及传送多个相对请求的基础URI。
 
-You can find out more about client middleware in the
-:doc:`handlers-and-middleware` page of the documentation.
+你可以在 :doc:`handlers-and-middleware` 页面找到更多关于中间件的内容。
 
-
-Async Requests
+异步请求
 --------------
 
-You can send asynchronous requests using the magic methods provided by a client:
+你可以使用 ``Client`` 提供的魔术方法来发送异步请求：
 
 .. code-block:: php
 
@@ -124,27 +104,24 @@ You can send asynchronous requests using the magic methods provided by a client:
     $promise = $client->postAsync('http://httpbin.org/post');
     $promise = $client->putAsync('http://httpbin.org/put');
 
-You can also use the `sendAsync()` and `requestAsync()` methods of a client:
+你也可以使用一个客户端的 ``sendAsync()`` 和 ``requestAsync()`` 方法：
 
 .. code-block:: php
 
     use GuzzleHttp\Psr7\Request;
 
-    // Create a PSR-7 request object to send
+    // 创建一个PSR-7请求对象以用以发送
     $headers = ['X-Foo' => 'Bar'];
     $body = 'Hello!';
     $request = new Request('HEAD', 'http://httpbin.org/head', $headers, $body);
     $promise = $client->sendAsync($request);
 
-    // Or, if you don't need to pass in a request instance:
+    // 或者，不需要传入请求实例：
     $promise = $client->requestAsync('GET', 'http://httpbin.org/get');
 
-The promise returned by these methods implements the
-`Promises/A+ spec <https://promisesaplus.com/>`_, provided by the
-`Guzzle promises library <https://github.com/guzzle/promises>`_. This means
-that you can chain ``then()`` calls off of the promise. These then calls are
-either fulfilled with a successful ``Psr\Http\Message\ResponseInterface`` or
-rejected with an exception.
+这些方法返回了 ``Promise`` 对象，该对象实现了由
+`Guzzle promises library <https://github.com/guzzle/promises>`_
+提供的 `Promises/A+ spec <https://promisesaplus.com/>`_，这意味着你可以使用 ``then()`` 链来调用返回值，成功则使用  ``Psr\Http\Message\ResponseInterface`` 填充，否则抛出一个异常。
 
 .. code-block:: php
 
@@ -162,12 +139,10 @@ rejected with an exception.
         }
     );
 
-
-Concurrent requests
+并发请求
 -------------------
 
-You can send multiple requests concurrently using promises and asynchronous
-requests.
+你可以使用Promise和异步请求来同时发送多个请求。
 
 .. code-block:: php
 
@@ -176,7 +151,7 @@ requests.
 
     $client = new Client(['base_uri' => 'http://httpbin.org/']);
 
-    // Initiate each request but do not block
+    // 启动每个请求但不阻止(block)
     $promises = [
         'image' => $client->getAsync('/image'),
         'png'   => $client->getAsync('/image/png'),
@@ -184,19 +159,17 @@ requests.
         'webp'  => $client->getAsync('/image/webp')
     ];
 
-    // Wait for the requests to complete; throws a ConnectException
-    // if any of the requests fail
+    // 等待请求完成; 如果有任何一个请求失败，则抛出 ConnectException
     $responses = Promise\unwrap($promises);
 
-    // Wait for the requests to complete, even if some of them fail
+    // 等待请求完成，即使其中一些请求已经失败
     $responses = Promise\settle($promises)->wait();
 
-    // You can access each response using the key of the promise
+    // 你可以使用 promise 的键来访问每个响应
     echo $responses['image']->getHeader('Content-Length')[0]
     echo $responses['png']->getHeader('Content-Length')[0]
 
-You can use the ``GuzzleHttp\Pool`` object when you have an indeterminate
-amount of requests you wish to send.
+当你想发送不确定数量的请求时，可以使用 ``GuzzleHttp\Pool`` 对象：
 
 .. code-block:: php
 
@@ -218,20 +191,20 @@ amount of requests you wish to send.
     $pool = new Pool($client, $requests(100), [
         'concurrency' => 5,
         'fulfilled' => function (Response $response, $index) {
-            // this is delivered each successful response
+            // 这是每次成功的响应传递的
         },
         'rejected' => function (RequestException $reason, $index) {
-            // this is delivered each failed request
+            // 这是每个失败的请求传递的
         },
     ]);
 
-    // Initiate the transfers and create a promise
+    // 启动传输并创建一个promise
     $promise = $pool->promise();
 
-    // Force the pool of requests to complete.
+    // 强制完成请求池。
     $promise->wait();
 
-Or using a closure that will return a promise once the pool calls the closure.
+或者使用一个闭包，一旦池调用闭包，它将返回一个 ``Promise`` 对象。
 
 .. code-block:: php
 
@@ -249,67 +222,63 @@ Or using a closure that will return a promise once the pool calls the closure.
     $pool = new Pool($client, $requests(100));
 
 
-Using Responses
+使用响应
 ===============
 
-In the previous examples, we retrieved a ``$response`` variable or we were
-delivered a response from a promise. The response object implements a PSR-7
-response, ``Psr\Http\Message\ResponseInterface``, and contains lots of
-helpful information.
+前面的例子里，我们获取了一个 ``$response`` 变量，或者从Promise得到了一个响应。
+该 ``Response`` 对象实现了 ``Psr\Http\Message\ResponseInterface`` PSR-7接口，其中包含了很多有用的信息。
 
-You can get the status code and reason phrase of the response:
+你可以获取这个响应的状态码和和原因短语(reason phrase)：
 
 .. code-block:: php
 
     $code = $response->getStatusCode(); // 200
     $reason = $response->getReasonPhrase(); // OK
 
-You can retrieve headers from the response:
+你可以从响应中获取标头：
 
 .. code-block:: php
 
-    // Check if a header exists.
+    // 检查标头是否存在
     if ($response->hasHeader('Content-Length')) {
         echo "It exists";
     }
 
-    // Get a header from the response.
+    // 从响应中获取标头
     echo $response->getHeader('Content-Length')[0];
 
-    // Get all of the response headers.
+    //获取所有响应标头
     foreach ($response->getHeaders() as $name => $values) {
         echo $name . ': ' . implode(', ', $values) . "\r\n";
     }
 
-The body of a response can be retrieved using the ``getBody`` method. The body
-can be used as a string, cast to a string, or used as a stream like object.
+
+使用 ``getBody`` 方法可以获取响应的正文(body)，主体可以当成一个字符串或流对象使用。
 
 .. code-block:: php
 
     $body = $response->getBody();
-    // Implicitly cast the body to a string and echo it
+    // 将正文隐式投射到一个字符串并echo它
     echo $body;
-    // Explicitly cast the body to a string
+    // 将正文显式地转换为字符串
     $stringBody = (string) $body;
-    // Read 10 bytes from the body
+    // 从正文中读取10个字节
     $tenBytes = $body->read(10);
-    // Read the remaining contents of the body as a string
+    // 以字符串形式读取正文的剩余内容
     $remainingBytes = $body->getContents();
 
-
-Query String Parameters
+查询字符串参数
 =======================
 
-You can provide query string parameters with a request in several ways.
+你可以有多种方式来提供请求的查询字符串。
 
-You can set query string parameters in the request's URI:
+你可以在请求的URI中设置查询字符串：
 
 .. code-block:: php
 
     $response = $client->request('GET', 'http://httpbin.org?foo=bar');
 
-You can specify the query string parameters using the ``query`` request
-option as an array.
+你可以使用 ``query`` 请求参数来指定查询字符串参数：
 
 .. code-block:: php
 
@@ -317,42 +286,39 @@ option as an array.
         'query' => ['foo' => 'bar']
     ]);
 
-Providing the option as an array will use PHP's ``http_build_query`` function
-to format the query string.
+提供的数组参数将会使用PHP的 ``http_build_query`` 函数来格式化该查询字符串：
 
-And finally, you can provide the ``query`` request option as a string.
+最后，你可以提供一个字符串作为 ``query`` 请求选项：
 
 .. code-block:: php
 
     $client->request('GET', 'http://httpbin.org', ['query' => 'foo=bar']);
 
 
-Uploading Data
+上传数据
 ==============
 
-Guzzle provides several methods for uploading data.
+Guzzle为上传数据提供了一些方法。
 
-You can send requests that contain a stream of data by passing a string,
-resource returned from ``fopen``, or an instance of a
-``Psr\Http\Message\StreamInterface`` to the ``body`` request option.
+你可以发送一个包含数据流的请求，将一个字符串、``fopen`` 返回的资源、或者一个
+``Psr\Http\Message\StreamInterface`` 的实例设置为 ``body`` 请求选项。
 
 .. code-block:: php
 
-    // Provide the body as a string.
+    // 提供字符串作为正文
     $r = $client->request('POST', 'http://httpbin.org/post', [
         'body' => 'raw data'
     ]);
 
-    // Provide an fopen resource.
+    // 提供一个fopen资源
     $body = fopen('/path/to/file', 'r');
     $r = $client->request('POST', 'http://httpbin.org/post', ['body' => $body]);
 
-    // Use the stream_for() function to create a PSR-7 stream.
+    // 使用 stream_for() 函数创建一个PSR-7流。
     $body = \GuzzleHttp\Psr7\stream_for('hello!');
     $r = $client->request('POST', 'http://httpbin.org/post', ['body' => $body]);
 
-An easy way to upload JSON data and set the appropriate header is using the
-``json`` request option:
+上传JSON数据以及设置合适的标头的简单方式就是使用 ``json`` 请求选项：
 
 .. code-block:: php
 
@@ -360,19 +326,16 @@ An easy way to upload JSON data and set the appropriate header is using the
         'json' => ['foo' => 'bar']
     ]);
 
-
-POST/Form Requests
+POST/表单请求
 ------------------
 
-In addition to specifying the raw data of a request using the ``body`` request
-option, Guzzle provides helpful abstractions over sending POST data.
+除了使用 ``body`` 请求选项来指定请求的原始数据外，Guzzle还为发送POST数据提供了其他有用的方法。
 
-
-Sending form fields
+发送表单字段
 ~~~~~~~~~~~~~~~~~~~
 
-Sending ``application/x-www-form-urlencoded`` POST requests requires that you
-specify the POST fields as an array in the ``form_params`` request options.
+发送 ``application/x-www-form-urlencoded`` POST请求需要你传入一个指定了POST的字段的
+``form_params`` 请求选项数组。
 
 .. code-block:: php
 
@@ -386,19 +349,16 @@ specify the POST fields as an array in the ``form_params`` request options.
         ]
     ]);
 
-
-Sending form files
+发送表单文件
 ~~~~~~~~~~~~~~~~~~
 
-You can send files along with a form (``multipart/form-data`` POST requests),
-using the ``multipart`` request option. ``multipart`` accepts an array of
-associative arrays, where each associative array contains the following keys:
+你可以通过使用 ``multipart`` 请求选项来发送表单文件(表单 ``enctype`` 属性需要设置为
+``multipart/form-data``)，该选项接收一个包含多个关联数组的数组，每个关联数组包含以下键：
 
-- name: (required, string) key mapping to the form field name.
-- contents: (required, mixed) Provide a string to send the contents of the
-  file as a string, provide an fopen resource to stream the contents from a
-  PHP stream, or provide a ``Psr\Http\Message\StreamInterface`` to stream
-  the contents from a PSR-7 stream.
+- ``name``: (必需，字符串) 映射到表单字段名称的键。
+- ``contents``: (必需，混合) 提供一个字符串，则以字符串形式发送文件内容。
+  提供一个 ``fopen`` 资源，则以从PHP流中获取的流来传输内容。
+  或提供一个 ``Psr\Http\Message\StreamInterface``，则以从PSR-7流中获取的内容来传输内容。
 
 .. code-block:: php
 
@@ -423,42 +383,35 @@ associative arrays, where each associative array contains the following keys:
         ]
     ]);
 
-
 Cookies
 =======
 
-Guzzle can maintain a cookie session for you if instructed using the
-``cookies`` request option. When sending a request, the ``cookies`` option
-must be set to an instance of ``GuzzleHttp\Cookie\CookieJarInterface``.
+Guzzle可以使用 ``cookies`` 请求选项为你维护一个Cookie会话。
+当发送一个请求时，``cookies`` 选项必须设置成一个 ``GuzzleHttp\Cookie\CookieJarInterface`` 实例。
 
 .. code-block:: php
 
-    // Use a specific cookie jar
+    // 使用特定的cookie jar
     $jar = new \GuzzleHttp\Cookie\CookieJar;
     $r = $client->request('GET', 'http://httpbin.org/cookies', [
         'cookies' => $jar
     ]);
 
-You can set ``cookies`` to ``true`` in a client constructor if you would like
-to use a shared cookie jar for all requests.
+如果你想为所有请求使用一个共享的Cookie Jar，可以在客户端的构造函数中将 ``cookies`` 设置为 ``true``。
 
 .. code-block:: php
 
-    // Use a shared client cookie jar
+    // 使用客户端共享的 Cookie Jar
     $client = new \GuzzleHttp\Client(['cookies' => true]);
     $r = $client->request('GET', 'http://httpbin.org/cookies');
 
-Different implementations exist for the ``GuzzleHttp\Cookie\CookieJarInterface``
-:
+存在以下不同的 ``GuzzleHttp\Cookie\CookieJarInterface`` 实现：
 
-- The ``GuzzleHttp\Cookie\CookieJar`` class stores cookies as an array.
-- The ``GuzzleHttp\Cookie\FileCookieJar`` class persists non-session cookies
-  using a JSON formatted file.
-- The ``GuzzleHttp\Cookie\SessionCookieJar`` class persists cookies in the
-  client session.
+- ``GuzzleHttp\Cookie\CookieJar`` 类将Cookie储存为数组。
+- ``GuzzleHttp\Cookie\FileCookieJar`` 类使用一个JSON格式的文件来持久非会话的Cookie。
+- ``GuzzleHttp\Cookie\SessionCookieJar`` 类以客户端的会话来持久Cookie。
 
-You can manually set cookies into a cookie jar with the named constructor
-``fromArray(array $cookies, $domain)``.
+你可以使用命名构造器 ``fromArray(array $cookies, $domain)`` 来手动将Cookie设置为Cookie Jar。
 
 .. code-block:: php
 
@@ -470,8 +423,8 @@ You can manually set cookies into a cookie jar with the named constructor
         'example.org'
     );
 
-You can get a cookie by its name with the ``getCookieByName($name)`` method
-which returns a ``GuzzleHttp\Cookie\SetCookie`` instance.
+你可以使用 ``getCookieByName($name)`` 方法来通过名称获取一个Cookie。该方法返回一个
+``GuzzleHttp\Cookie\SetCookie`` 实例。
 
 .. code-block:: php
 
@@ -479,27 +432,23 @@ which returns a ``GuzzleHttp\Cookie\SetCookie`` instance.
 
     $cookie->getValue(); // 'foo'
     $cookie->getDomain(); // 'example.org'
-    $cookie->getExpires(); // expiration date as a Unix timestamp
+    $cookie->getExpires(); // 作为Unix时间戳的到期日期
 
-The cookies can be also fetched into an array thanks to the `toArray()` method.
-The ``GuzzleHttp\Cookie\CookieJarInterface`` interface extends
-``Traversable`` so it can be iterated in a foreach loop.
+得益于 ``toArray()`` 方法，Cookie也可以被提取到数组中。
+``GuzzleHttp\Cookie\CookieJarInterface`` 接口继承了
+``Traversable``，因此它可以在 ``foreach`` 循环中迭代。
 
-
-Redirects
+重定向
 =========
 
-Guzzle will automatically follow redirects unless you tell it not to. You can
-customize the redirect behavior using the ``allow_redirects`` request option.
+如果你没有告诉Guzzle不要重定向，Guzzle会自动的进行重定向。
+你可以使用 ``allow_redirects`` 请求选项来自定义重定向行为。
 
-- Set to ``true`` to enable normal redirects with a maximum number of 5
-  redirects. This is the default setting.
-- Set to ``false`` to disable redirects.
-- Pass an associative array containing the 'max' key to specify the maximum
-  number of redirects and optionally provide a 'strict' key value to specify
-  whether or not to use strict RFC compliant redirects (meaning redirect POST
-  requests with POST requests vs. doing what most browsers do which is
-  redirect POST requests with GET requests).
+- 设置成 ``true`` 时将启用最大数量为 ``5`` 的重定向，这是默认设置。
+- 设置成 ``false`` 可以禁用重定向。
+- 传入一个包含 ``max`` 键名的关联数组来声明最大重定向次数，并且提供可选的 ``strict``
+  键名来声明是否使用严格的RFC标准重定向 (即使用POST请求来重定向POST请求 vs
+  大部分浏览器使用GET请求来重定向POST请求)。
 
 .. code-block:: php
 
@@ -507,7 +456,7 @@ customize the redirect behavior using the ``allow_redirects`` request option.
     echo $response->getStatusCode();
     // 200
 
-The following example shows that redirects can be disabled.
+下面的列子表示重定向被禁止：
 
 .. code-block:: php
 
@@ -517,20 +466,18 @@ The following example shows that redirects can be disabled.
     echo $response->getStatusCode();
     // 301
 
-
-Exceptions
+异常
 ==========
 
-**Tree View**
+**继承树**
 
-The following tree view describes how the Guzzle Exceptions depend
-on each other.
+以下视图树描述了Guzzle的异常是如何相互依赖的。
 
 .. code-block:: none
 
     . \RuntimeException
-    ├── SeekException (implements GuzzleException)
-    └── TransferException (implements GuzzleException)
+    ├── SeekException (实现了 GuzzleException)
+    └── TransferException (实现了 GuzzleException)
         └── RequestException
             ├── BadResponseException
             │   ├── ServerException
@@ -538,13 +485,11 @@ on each other.
             ├── ConnectException
             └── TooManyRedirectsException
 
-Guzzle throws exceptions for errors that occur during a transfer.
+如果请求传输过程中出现错误，则Guzzle将会抛出异常。
 
-- In the event of a networking error (connection timeout, DNS errors, etc.),
-  a ``GuzzleHttp\Exception\RequestException`` is thrown. This exception
-  extends from ``GuzzleHttp\Exception\TransferException``. Catching this
-  exception will catch any exception that can be thrown while transferring
-  requests.
+- 在发生网络错误(连接超时、DNS错误等)时，将会抛出 ``GuzzleHttp\Exception\RequestException``
+  异常，该异常继承自 ``GuzzleHttp\Exception\TransferException``。
+  捕获这个异常，将可以捕获在传输请求过程中抛出的任何异常。
 
   .. code-block:: php
 
@@ -560,15 +505,12 @@ Guzzle throws exceptions for errors that occur during a transfer.
           }
       }
 
-- A ``GuzzleHttp\Exception\ConnectException`` exception is thrown in the
-  event of a networking error. This exception extends from
-  ``GuzzleHttp\Exception\RequestException``.
+- 发生网络错误时会抛出一个 ``GuzzleHttp\Exception\ConnectException`` 异常，该异常继承自
+  ``GuzzleHttp\Exception\RequestException``。
 
-- A ``GuzzleHttp\Exception\ClientException`` is thrown for 400
-  level errors if the ``http_errors`` request option is set to true. This
-  exception extends from ``GuzzleHttp\Exception\BadResponseException`` and
-  ``GuzzleHttp\Exception\BadResponseException`` extends from
-  ``GuzzleHttp\Exception\RequestException``.
+- 如果将 ``http_errors`` 请求选项设置成 ``true``，则将在发生 ``400``
+  级别的错误时抛出 ``GuzzleHttp\Exception\ClientException`` 异常，该异常继承自 ``GuzzleHttp\Exception\BadResponseException``，而
+  ``GuzzleHttp\Exception\BadResponseException`` 则继承自 ``GuzzleHttp\Exception\RequestException``。
 
   .. code-block:: php
 
@@ -582,44 +524,36 @@ Guzzle throws exceptions for errors that occur during a transfer.
           echo Psr7\str($e->getResponse());
       }
 
-- A ``GuzzleHttp\Exception\ServerException`` is thrown for 500 level
-  errors if the ``http_errors`` request option is set to true. This
-  exception extends from ``GuzzleHttp\Exception\BadResponseException``.
+- 如果将 ``http_errors`` 请求选项设置成 ``true``，则将在发生 ``500``
+  级别的错误时抛出 ``GuzzleHttp\Exception\ServerException`` 异常，该异常继承自 ``GuzzleHttp\Exception\BadResponseException``。
 
-- A ``GuzzleHttp\Exception\TooManyRedirectsException`` is thrown when too
-  many redirects are followed. This exception extends from ``GuzzleHttp\Exception\RequestException``.
+- ``GuzzleHttp\Exception\TooManyRedirectsException`` 异常发生在重定向次数过多时，该异常继承自
+  ``GuzzleHttp\Exception\RequestException``。
 
-All of the above exceptions extend from
-``GuzzleHttp\Exception\TransferException``.
+上述所有异常均继承自 ``GuzzleHttp\Exception\TransferException``。
 
-
-Environment Variables
+环境变量
 =====================
 
-Guzzle exposes a few environment variables that can be used to customize the
-behavior of the library.
+Guzzle提供了一些可以自定义行为的环境变量：
 
 ``GUZZLE_CURL_SELECT_TIMEOUT``
-    Controls the duration in seconds that a curl_multi_* handler will use when
-    selecting on curl handles using ``curl_multi_select()``. Some systems
-    have issues with PHP's implementation of ``curl_multi_select()`` where
-    calling this function always results in waiting for the maximum duration of
-    the timeout.
+    当在curl处理器使用 ``curl_multi_select()`` 时控制了 ``curl_multi_*`` 处理器需要使用到的持续时间。
+    有些系统的 ``curl_multi_select()`` PHP实现存在问题，调用该函数时总是等待超时的最大值。
 ``HTTP_PROXY``
-    Defines the proxy to use when sending requests using the "http" protocol.
+    定义了使用 ``http`` 协议发送请求时使用的代理。
 
-    Note: because the HTTP_PROXY variable may contain arbitrary user input on some (CGI) environments, the variable is only used on the CLI SAPI. See https://httpoxy.org for more information.
+    注意：因为 ``HTTP_PROXY`` 变量可能在某些（CGI）环境中包含任意用户输入，所以该变量仅适用于CLI SAPI。
+    有关更多信息，请参阅 https://httpoxy.org。
 ``HTTPS_PROXY``
-    Defines the proxy to use when sending requests using the "https" protocol.
+    定义了使用 ``https`` 协议发送请求时使用的代理。
 ``NO_PROXY``
-    Defines URLs for which a proxy should not be used. See :ref:`proxy-option` for usage.
+    定义不应使用代理的URL。请参阅 :ref:`proxy-option` 以了解其用法。
 
-
-Relevant ini Settings
+相关ini设置
 ---------------------
 
-Guzzle can utilize PHP ini settings when configuring clients.
+配置客户端时，Guzzle可以利用PHP的ini配置。
 
 ``openssl.cafile``
-    Specifies the path on disk to a CA file in PEM format to use when sending
-    requests over "https". See: https://wiki.php.net/rfc/tls-peer-verification#phpini_defaults
+    当发送 ``https`` 协议的请求时需要用到指定磁盘上PEM格式的CA文件，参考： https://wiki.php.net/rfc/tls-peer-verification#phpini_defaults

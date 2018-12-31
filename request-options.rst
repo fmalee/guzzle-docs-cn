@@ -1,29 +1,26 @@
 ===============
-Request Options
+请求选项
 ===============
 
-You can customize requests created and transferred by a client using
-**request options**. Request options control various aspects of a request
-including, headers, query string parameters, timeout settings, the body of a
-request, and much more.
+你可以通过设置 ``Client`` 的 **请求选项**
+来自定义请求，请求参数控制请求的各个方面，包括头信息、查询字符串参数、超时、请求主体等。
 
-All of the following examples use the following client:
+下述所有的列子都使用下面的 ``Client``：
 
 .. code-block:: php
 
     $client = new GuzzleHttp\Client(['base_uri' => 'http://httpbin.org']);
-
 
 .. _allow_redirects-option:
 
 allow_redirects
 ---------------
 
-:Summary: Describes the redirect behavior of a request
-:Types:
-        - bool
-        - array
-:Default:
+:摘要: 描述一个请求的重定向行为
+:类型:
+    - 布尔值
+    - 数组
+:默认值:
 
     ::
 
@@ -35,9 +32,9 @@ allow_redirects
             'track_redirects' => false
         ]
 
-:Constant: ``GuzzleHttp\RequestOptions::ALLOW_REDIRECTS``
+:常量: ``GuzzleHttp\RequestOptions::ALLOW_REDIRECTS``
 
-Set to ``false`` to disable redirects.
+设置成 ``false`` 禁用可以重定向。
 
 .. code-block:: php
 
@@ -45,8 +42,7 @@ Set to ``false`` to disable redirects.
     echo $res->getStatusCode();
     // 302
 
-Set to ``true`` (the default setting) to enable normal redirects with a maximum
-number of 5 redirects.
+设置成 ``true`` (默认设置) 来启用默认最大次数为 ``5`` 的重定向。
 
 .. code-block:: php
 
@@ -54,30 +50,21 @@ number of 5 redirects.
     echo $res->getStatusCode();
     // 200
 
-You can also pass an associative array containing the following key value
-pairs:
+你也可以传送一个包含了以下键值对的关联数组：
 
-- max: (int, default=5) maximum number of allowed redirects.
-- strict: (bool, default=false) Set to true to use strict redirects.
-  Strict RFC compliant redirects mean that POST redirect requests are sent as
-  POST requests vs. doing what most browsers do which is redirect POST requests
-  with GET requests.
-- referer: (bool, default=false) Set to true to enable adding the Referer
-  header when redirecting.
-- protocols: (array, default=['http', 'https']) Specified which protocols are
-  allowed for redirect requests.
-- on_redirect: (callable) PHP callable that is invoked when a redirect
-  is encountered. The callable is invoked with the original request and the
-  redirect response that was received. Any return value from the on_redirect
-  function is ignored.
-- track_redirects: (bool) When set to ``true``, each redirected URI and status
-  code encountered will be tracked in the ``X-Guzzle-Redirect-History`` and
-  ``X-Guzzle-Redirect-Status-History`` headers respectively. All URIs and
-  status codes will be stored in the order which the redirects were encountered.
+- ``max``: (``int``, 默认为 ``5``) 允许重定向次数的最大值。
+- ``strict``: (``bool``, 默认为 ``false``) 设置成 ``true`` 来使用严格模式重定向。
+  严格RFC模式重定向表示使用POST请求重定向POST请求 vs 大部分浏览器使用GET请求重定向POST请求。
+- ``referer``: (``bool``, 默认为 ``false``) 设置成 ``false`` 来在重定向时禁止添加Refer标头。
+- ``protocols``: (``array``, 默认为 ``['http', 'https']``) 指定允许重定向的协议。
+- ``on_redirect``: (``callable``) 发生重定向时调用的PHP回调，包含了原始的请求以及接收到重定向的响应,
+  ``on_redirect`` 的任何返回将会被忽略。
+- ``track_redirects``: (``bool``) 当设置为 ``true`` 时，每个重定向的URI和状态代码将分别在
+  ``X-Guzzle-Redirect-History`` 以及 ``X-Guzzle-Redirect-Status-History``
+  标头中被跟踪。所有URI和状态代码将按重定向遇到的顺序存储。
 
-  Note: When tracking redirects the ``X-Guzzle-Redirect-History`` header will
-  exclude the initial request's URI and the ``X-Guzzle-Redirect-Status-History``
-  header will exclude the final status code.
+  注意：当跟踪重定向时，``X-Guzzle-Redirect-History``
+  标头将排除初始请求的URI，而 ``X-Guzzle-Redirect-Status-History`` 标头将排除最终状态代码。
 
 .. code-block:: php
 
@@ -95,10 +82,10 @@ pairs:
 
     $res = $client->request('GET', '/redirect/3', [
         'allow_redirects' => [
-            'max'             => 10,        // allow at most 10 redirects.
-            'strict'          => true,      // use "strict" RFC compliant redirects.
-            'referer'         => true,      // add a Referer header
-            'protocols'       => ['https'], // only allow https URLs
+            'max'             => 10,        // 允许最多10次重定向
+            'strict'          => true,      // 使用“严格”符合RFC的重定向
+            'referer'         => true,      // 添加Referer标头
+            'protocols'       => ['https'], // 仅允许https网址
             'on_redirect'     => $onRedirect,
             'track_redirects' => true
         ]
@@ -111,44 +98,38 @@ pairs:
     // http://first-redirect, http://second-redirect, etc...
 
     echo $res->getHeaderLine('X-Guzzle-Redirect-Status-History');
-    // 301, 302, etc...
+    // 301, 302等等...
 
 .. warning::
 
-    This option only has an effect if your handler has the
-    ``GuzzleHttp\Middleware::redirect`` middleware. This middleware is added
-    by default when a client is created with no handler, and is added by
-    default when creating a handler with ``GuzzleHttp\HandlerStack::create``.
-
+    仅你的处理器具有 ``GuzzleHttp\Middleware::redirect`` 中间件时此选项才起作用。
+    默认情况下，在创建客户端时没有处理器的情况下会添加此中间件，并且在使用
+    ``GuzzleHttp\HandlerStack::create`` 来创建处理器时也会默认添加此中间件。
 
 auth
 ----
 
-:Summary: Pass an array of HTTP authentication parameters to use with the
-        request. The array must contain the username in index [0], the password in
-        index [1], and you can optionally provide a built-in authentication type in
-        index [2]. Pass ``null`` to disable authentication for a request.
-:Types:
-        - array
-        - string
-        - null
-:Default: None
-:Constant: ``GuzzleHttp\RequestOptions::AUTH``
+:摘要: 传入一个HTTP认证参数的数组来使用请求，该数组索引 ``[0]`` 为用户名、索引 ``[1]``
+    为密码，索引 ``[2]`` 为可选的内置认证类型。传入 ``null`` 可以禁用当前请求的认证。
+:类型:
+    - 数组
+    - 字符串
+    - null
+:默认值: 无
+:常量: ``GuzzleHttp\RequestOptions::AUTH``
 
-The built-in authentication types are as follows:
+内置认证类型如下:
 
-basic
-    Use `basic HTTP authentication <http://www.ietf.org/rfc/rfc2069.txt>`_
-    in the ``Authorization`` header (the default setting used if none is
-    specified).
+``basic``
+    在 ``Authorization`` 标头使用
+    `HTTP基础认证 <http://www.ietf.org/rfc/rfc2069.txt>`_ (如果没有指定的话为默认设置)。
 
 .. code-block:: php
 
     $client->request('GET', '/get', ['auth' => ['username', 'password']]);
 
-digest
-    Use `digest authentication <http://www.ietf.org/rfc/rfc2069.txt>`_
-    (must be supported by the HTTP handler).
+``digest``
+    使用 `摘要式认证 <http://www.ietf.org/rfc/rfc2069.txt>`_ (必须被HTTP处理器支持)。
 
 .. code-block:: php
 
@@ -158,13 +139,11 @@ digest
 
 .. note::
 
-    This is currently only supported when using the cURL handler, but
-    creating a replacement that can be used with any HTTP handler is
-    planned.
+    目前仅在使用cURL处理器时支持此类型，但计划创建可与任何HTTP处理器一起使用的替代。
 
-ntlm
-    Use `Microsoft NTLM authentication <https://msdn.microsoft.com/en-us/library/windows/desktop/aa378749(v=vs.85).aspx>`_
-    (must be supported by the HTTP handler).
+``ntlm``
+    使用`Microsoft NTLM 认证 <https://msdn.microsoft.com/en-us/library/windows/desktop/aa378749(v=vs.85).aspx>`_
+    (必须被HTTP处理器支持)。
 
 .. code-block:: php
 
@@ -174,35 +153,33 @@ ntlm
 
 .. note::
 
-    This is currently only supported when using the cURL handler.
-
+    目前仅在使用cURL处理器时支持此类型。
 
 body
 ----
 
-:Summary: The ``body`` option is used to control the body of an entity
-    enclosing request (e.g., PUT, POST, PATCH).
-:Types:
-    - string
-    - ``fopen()`` resource
+:摘要: ``body`` 选项用来控制一个请求(比如：PUT, POST, PATCH)的正文部分。
+:类型:
+    - 数组
+    - ``fopen()`` 资源
     - ``Psr\Http\Message\StreamInterface``
-:Default: None
-:Constant: ``GuzzleHttp\RequestOptions::BODY``
+:默认值: 无
+:常量: ``GuzzleHttp\RequestOptions::BODY``
 
-This setting can be set to any of the following types:
+可以设置成下述类型：
 
-- string
+- 字符串
 
   .. code-block:: php
 
-      // You can send requests that use a string as the message body.
+      // 你可以发送使用字符串作为消息正文的请求。
       $client->request('PUT', '/put', ['body' => 'foo']);
 
-- resource returned from ``fopen()``
+- 从 ``fopen()`` 中返回的资源
 
   .. code-block:: php
 
-      // You can send requests that use a stream resource as the body.
+      // 你可以发送使用流资源作为正文的请求。
       $resource = fopen('http://httpbin.org', 'r');
       $client->request('PUT', '/put', ['body' => $resource]);
 
@@ -210,49 +187,42 @@ This setting can be set to any of the following types:
 
   .. code-block:: php
 
-      // You can send requests that use a Guzzle stream object as the body
+      // 你可以发送使用Guzzle流对象作为正文的请求
       $stream = GuzzleHttp\Psr7\stream_for('contents...');
       $client->request('POST', '/post', ['body' => $stream]);
 
 .. note::
 
-    This option cannot be used with ``form_params``, ``multipart``, or ``json``
-
+    此选项不能和 ``form_params``、``multipart`` 以及 ``json`` 一起使用
 
 .. _cert-option:
 
 cert
 ----
 
-:Summary: Set to a string to specify the path to a file containing a PEM
-        formatted client side certificate. If a password is required, then set to
-        an array containing the path to the PEM file in the first array element
-        followed by the password required for the certificate in the second array
-        element.
-:Types:
-        - string
-        - array
-:Default: None
-:Constant: ``GuzzleHttp\RequestOptions::CERT``
+:摘要: 设置一个字符串来指定PEM格式认证文件的路径。
+    如果需要密码，则需要设置成一个数组，其中PEM文件在第一个元素，密码在第二个元素。
+:类型:
+    - 字符串
+    - 数组
+:默认值: 无
+:常量: ``GuzzleHttp\RequestOptions::CERT``
 
 .. code-block:: php
 
     $client->request('GET', '/', ['cert' => ['/path/server.pem', 'password']]);
-
 
 .. _cookies-option:
 
 cookies
 -------
 
-:Summary: Specifies whether or not cookies are used in a request or what cookie
-        jar to use or what cookies to send.
-:Types: ``GuzzleHttp\Cookie\CookieJarInterface``
-:Default: None
-:Constant: ``GuzzleHttp\RequestOptions::COOKIES``
+:摘要: 声明是否在请求中使用cookie，可以是要使用的cookie jar，或者要发送的cookie。
+:类型: ``GuzzleHttp\Cookie\CookieJarInterface``
+:默认值: 无
+:常量: ``GuzzleHttp\RequestOptions::COOKIES``
 
-You must specify the cookies option as a
-``GuzzleHttp\Cookie\CookieJarInterface`` or ``false``.
+你必须指定 ``cookie`` 选项为 ``GuzzleHttp\Cookie\CookieJarInterface`` 或 ``false``。
 
 .. code-block:: php
 
@@ -261,62 +231,52 @@ You must specify the cookies option as a
 
 .. warning::
 
-    This option only has an effect if your handler has the
-    ``GuzzleHttp\Middleware::cookies`` middleware. This middleware is added
-    by default when a client is created with no handler, and is added by
-    default when creating a handler with ``GuzzleHttp\default_handler``.
+    仅你的处理器具有 ``GuzzleHttp\Middleware::cookies`` 中间件时此选项才起作用。
+    默认情况下，在创建客户端时没有处理器的情况下会添加此中间件，并且在使用
+    ``GuzzleHttp\default_handler`` 来创建处理器时也会默认添加此中间件。
 
 .. tip::
 
-    When creating a client, you can set the default cookie option to ``true``
-    to use a shared cookie session associated with the client.
-
+    创建一个客户端时，可以将默认 ``cookie`` 选项设置 ``true``，以便与关联的客户端共享cookie会话。
 
 .. _connect_timeout-option:
 
 connect_timeout
 ---------------
 
-:Summary: Float describing the number of seconds to wait while trying to connect
-        to a server. Use ``0`` to wait indefinitely (the default behavior).
-:Types: float
-:Default: ``0``
-:Constant: ``GuzzleHttp\RequestOptions::CONNECT_TIMEOUT``
+:摘要: 表示等待服务器响应超时的最大值，使用 ``0`` 将无限等待 (默认行为).
+:类型: 浮点
+:默认值: ``0``
+:常量: ``GuzzleHttp\RequestOptions::CONNECT_TIMEOUT``
 
 .. code-block:: php
 
-    // Timeout if the client fails to connect to the server in 3.14 seconds.
+    // 如果客户端无法在3.14秒内连接到服务器，则超时。
     $client->request('GET', '/delay/5', ['connect_timeout' => 3.14]);
 
 .. note::
 
-    This setting must be supported by the HTTP handler used to send a request.
-    ``connect_timeout`` is currently only supported by the built-in cURL
-    handler.
-
+    用于发送请求的HTTP处理器必须支持此设置。目前只有内置的cURL处理器支持此选项。
 
 .. _debug-option:
 
 debug
 -----
 
-:Summary: Set to ``true`` or set to a PHP stream returned by ``fopen()`` to
-    enable debug output with the handler used to send a request. For example,
-    when using cURL to transfer requests, cURL's verbose of ``CURLOPT_VERBOSE``
-    will be emitted. When using the PHP stream wrapper, stream wrapper
-    notifications will be emitted. If set to true, the output is written to
-    PHP's STDOUT. If a PHP stream is provided, output is written to the stream.
-:Types:
-        - bool
-        - ``fopen()`` resource
-:Default: None
-:Constant: ``GuzzleHttp\RequestOptions::DEBUG``
+:摘要: 设置成 ``true`` 或设置成一个 ``fopen()`` 返回的流来启用对发送请求的处理器的调试输出。
+    比如，当使用cURL传输请求，cURL的 ``CURLOPT_VERBOSE`` 的冗长将会发出，当使用PHP流，流处理的提示将会发生。
+    如果设置为 ``true``，输出将写入到PHP标准输出文件，如果提供了PHP流，将会输出到流。
+:类型:
+        - 布尔值
+        - ``fopen()`` 资源
+:默认值: 无
+:常量: ``GuzzleHttp\RequestOptions::DEBUG``
 
 .. code-block:: php
 
     $client->request('GET', '/get', ['debug' => true]);
 
-Running the above example would output something like the following:
+执行上面的例子将会输出类似下面的结果：
 
 ::
 
@@ -342,116 +302,101 @@ Running the above example would output something like the following:
 decode_content
 --------------
 
-:Summary: Specify whether or not ``Content-Encoding`` responses (gzip,
-    deflate, etc.) are automatically decoded.
-:Types:
-        - string
-        - bool
-:Default: ``true``
-:Constant: ``GuzzleHttp\RequestOptions::DECODE_CONTENT``
+:摘要: 指定是否自动解码  ``Content-Encoding`` 响应 (gzip, deflate等) 。
+:类型:
+    - 字符串
+    - 布尔值
+:默认值: ``true``
+:常量: ``GuzzleHttp\RequestOptions::DECODE_CONTENT``
 
-This option can be used to control how content-encoded response bodies are
-handled. By default, ``decode_content`` is set to true, meaning any gzipped
-or deflated response will be decoded by Guzzle.
+该选项可以用来控制 ``Content-Encoding`` 如何响应主体的。默认情况下，``decode_content``
+设置为 ``true``，表示Guzzle将自动解码 ``gzip``、``deflate`` 等响应。
 
-When set to ``false``, the body of a response is never decoded, meaning the
-bytes pass through the handler unchanged.
+当设置成 ``false``，响应的主体将不会被解码，意味着字节将毫无变化的通过处理器。
 
 .. code-block:: php
 
-    // Request gzipped data, but do not decode it while downloading
+    // 请求gzip压缩的数据，但在下载时不解码
     $client->request('GET', '/foo.js', [
         'headers'        => ['Accept-Encoding' => 'gzip'],
         'decode_content' => false
     ]);
 
-When set to a string, the bytes of a response are decoded and the string value
-provided to the ``decode_content`` option is passed as the ``Accept-Encoding``
-header of the request.
+当设置成字符串时，响应的字节将被解码，提供 ``decode_content``
+选项的字符串将被传递为请求的 ``Accept-Encoding`` 标头。
 
 .. code-block:: php
 
-    // Pass "gzip" as the Accept-Encoding header.
+    // 将“gzip”作为Accept-Encoding标头传递。
     $client->request('GET', '/foo.js', ['decode_content' => 'gzip']);
-
 
 .. _delay-option:
 
 delay
 -----
 
-:Summary: The number of milliseconds to delay before sending the request.
-:Types:
-    - integer
-    - float
-:Default: null
-:Constant: ``GuzzleHttp\RequestOptions::DELAY``
-
+:摘要: 发送请求之前延迟的毫秒数值
+:类型:
+    - 整数
+    - 浮点
+:默认值: ``null``
+:常量: ``GuzzleHttp\RequestOptions::DELAY``
 
 .. _expect-option:
 
 expect
 ------
 
-:Summary: Controls the behavior of the "Expect: 100-Continue" header.
-:Types:
-    - bool
-    - integer
-:Default: ``1048576``
-:Constant: ``GuzzleHttp\RequestOptions::EXPECT``
+:摘要: 控制 ``Expect: 100-Continue`` 标头的行为。
+:类型:
+    - 布尔值
+    - 整数
+:默认值: ``1048576``
+:常量: ``GuzzleHttp\RequestOptions::EXPECT``
 
-Set to ``true`` to enable the "Expect: 100-Continue" header for all requests
-that sends a body. Set to ``false`` to disable the "Expect: 100-Continue"
-header for all requests. Set to a number so that the size of the payload must
-be greater than the number in order to send the Expect header. Setting to a
-number will send the Expect header for all requests in which the size of the
-payload cannot be determined or where the body is not rewindable.
+设置成 ``true`` 来为所有发送主体的请求启用 ``Expect: 100-Continue`` 标头。
+设置成 ``false`` 来为所有的请求禁用 ``Expect: 100-Continue`` 标头。
+设置成一个数值，有效载荷的大小必须大于预计发送的标头。
+设置成数值将会为所有不确定有效载荷大小或主体不能确定指针位置的请求发送 ``Expect`` 标头。
 
-By default, Guzzle will add the "Expect: 100-Continue" header when the size of
-the body of a request is greater than 1 MB and a request is using HTTP/1.1.
+默认情况下，当请求的主体大于 ``1MB`` 以及请求使用 ``HTTP/1.1`` 时，Guzzle将会添加
+``Expect: 100-Continue`` 标头。
 
 .. note::
 
-    This option only takes effect when using HTTP/1.1. The HTTP/1.0 and
-    HTTP/2.0 protocols do not support the "Expect: 100-Continue" header.
-    Support for handling the "Expect: 100-Continue" workflow must be
-    implemented by Guzzle HTTP handlers used by a client.
-
+    此选项仅在使用 ``HTTP/1.1`` 时生效。``HTTP/1.0`` 和 ``HTTP/2.0``
+    协议不支持 ``Expect: 100-Continue`` 标头。支持处理 ``Expect: 100-Continue``
+    的工作流必须由客户端使用的Guzzle HTTP处理器实现。
 
 force_ip_resolve
 ----------------
 
-:Summary: Set to "v4" if you want the HTTP handlers to use only ipv4 protocol or "v6" for ipv6 protocol.
-:Types: string
-:Default: null
-:Constant: ``GuzzleHttp\RequestOptions::FORCE_IP_RESOLVE``
+:摘要: 如果希望HTTP处理器仅使用ipv4协议，请设置为 ``v4``，如果是ipv6协议，则设置为 ``v6``。
+:类型: 字符串
+:默认值: ``null``
+:常量: ``GuzzleHttp\RequestOptions::FORCE_IP_RESOLVE``
 
 .. code-block:: php
 
-    // Force ipv4 protocol
+    // 强制为ipv4协议
     $client->request('GET', '/foo', ['force_ip_resolve' => 'v4']);
 
-    // Force ipv6 protocol
+    // 强制为ipv6协议
     $client->request('GET', '/foo', ['force_ip_resolve' => 'v6']);
 
 .. note::
 
-    This setting must be supported by the HTTP handler used to send a request.
-    ``force_ip_resolve`` is currently only supported by the built-in cURL
-    and stream handlers.
-
+    用于发送请求的HTTP处理器必须支持此设置。目前只有内置的cURL和流处理器支持 ``force_ip_resolve``。
 
 form_params
 -----------
 
-:Summary: Used to send an `application/x-www-form-urlencoded` POST request.
-:Types: array
-:Constant: ``GuzzleHttp\RequestOptions::FORM_PARAMS``
+:摘要: 用来发送一个 ``application/x-www-form-urlencoded`` POST请求.
+:类型: 数组
+:常量: ``GuzzleHttp\RequestOptions::FORM_PARAMS``
 
-Associative array of form field names to values where each value is a string or
-array of strings. Sets the Content-Type header to
-application/x-www-form-urlencoded when no Content-Type header is already
-present.
+关联数组由表单字段键值对构成，每个字段值可以是一个字符串或一个包含字符串元素的数组。
+当没有预设 "Content-Type" 标头的时候，会将其设置为 ``application/x-www-form-urlencoded``。
 
 .. code-block:: php
 
@@ -464,26 +409,23 @@ present.
 
 .. note::
 
-    ``form_params`` cannot be used with the ``multipart`` option. You will need to use
-    one or the other. Use ``form_params`` for ``application/x-www-form-urlencoded``
-    requests, and ``multipart`` for ``multipart/form-data`` requests.
+    ``form_params`` 不能与 ``multipart`` 选项一起使用。你只能使用其中一个。
+    对 ``application/x-www-form-urlencoded`` 请求使用
+    ``form_params``，对 ``multipart/form-data`` 请求使用 ``multipart``。
 
-    This option cannot be used with ``body``, ``multipart``, or ``json``
-
+    此选项不能与 ``body``、``multipart``、``json`` 一起使用。
 
 headers
 -------
 
-:Summary: Associative array of headers to add to the request. Each key is the
-    name of a header, and each value is a string or array of strings
-    representing the header field values.
-:Types: array
-:Defaults: None
-:Constant: ``GuzzleHttp\RequestOptions::HEADERS``
+:摘要: 要添加到请求的标头的关联数组，每个键名是一个标头的名称，每个键值是一个字符串或代表标头字段值的数组。
+:类型: 数组
+:默认值: 无
+:常量: ``GuzzleHttp\RequestOptions::HEADERS``
 
 .. code-block:: php
 
-    // Set various headers on a request
+    // 在请求上设置各种标头
     $client->request('GET', '/get', [
         'headers' => [
             'User-Agent' => 'testing/1.0',
@@ -492,54 +434,48 @@ headers
         ]
     ]);
 
-Headers may be added as default options when creating a client. When headers
-are used as default options, they are only applied if the request being created
-does not already contain the specific header. This includes both requests passed
-to the client in the ``send()`` and ``sendAsync()`` methods, and requests
-created by the client (e.g., ``request()`` and ``requestAsync()``).
+创建一个客户端的时候，标头可以作为默认选项添加。
+当标头被作为默认选项使用时，它们只能在没有包含指定标头的请求中生效，这包括了传递给客户端的
+``send()`` 和 ``sendAsync()`` 方法的请求，以及由客户端创建的请求(比如 ``request()`` 和 ``requestAsync()``)。
 
 .. code-block:: php
 
     $client = new GuzzleHttp\Client(['headers' => ['X-Foo' => 'Bar']]);
 
-    // Will send a request with the X-Foo header.
+    // 将使用X-Foo标头来发送请求。
     $client->request('GET', '/get');
 
-    // Sets the X-Foo header to "test", which prevents the default header
-    // from being applied.
+    // 将X-Foo标头设置为“test”，这会阻止已应用的默认标头。
     $client->request('GET', '/get', ['headers' => ['X-Foo' => 'test']]);
 
-    // Will disable adding in default headers.
+    // 将禁用添加的默认标头
     $client->request('GET', '/get', ['headers' => null]);
 
-    // Will not overwrite the X-Foo header because it is in the message.
+    // 不会重写 X-Foo 标头，因为它只是包含在消息中。
     use GuzzleHttp\Psr7\Request;
     $request = new Request('GET', 'http://foo.com', ['X-Foo' => 'test']);
     $client->send($request);
 
-    // Will overwrite the X-Foo header with the request option provided in the
-    // send method.
+    // 将使用send方法中提供的请求选项来重写该 X-Foo 标头。
     use GuzzleHttp\Psr7\Request;
     $request = new Request('GET', 'http://foo.com', ['X-Foo' => 'test']);
     $client->send($request, ['headers' => ['X-Foo' => 'overwrite']]);
-
 
 .. _http-errors-option:
 
 http_errors
 -----------
 
-:Summary: Set to ``false`` to disable throwing exceptions on an HTTP protocol
-    errors (i.e., 4xx and 5xx responses). Exceptions are thrown by default when
-    HTTP protocol errors are encountered.
-:Types: bool
-:Default: ``true``
-:Constant: ``GuzzleHttp\RequestOptions::HTTP_ERRORS``
+:摘要: 设置成 ``false`` 来禁用在一个HTTP协议出错(如 ``4xx`` 和 ``5xx`` 响应)时抛出异常。
+    默认情况下，HTTP协议出错时会抛出异常。
+:类型: 布尔值
+:默认值: ``true``
+:常量: ``GuzzleHttp\RequestOptions::HTTP_ERRORS``
 
 .. code-block:: php
 
     $client->request('GET', '/status/500');
-    // Throws a GuzzleHttp\Exception\ServerException
+    // 抛出一个 GuzzleHttp\Exception\ServerException
 
     $res = $client->request('GET', '/status/500', ['http_errors' => false]);
     echo $res->getStatusCode();
@@ -547,37 +483,32 @@ http_errors
 
 .. warning::
 
-    This option only has an effect if your handler has the
-    ``GuzzleHttp\Middleware::httpErrors`` middleware. This middleware is added
-    by default when a client is created with no handler, and is added by
-    default when creating a handler with ``GuzzleHttp\default_handler``.
-
+    仅你的处理器具有 ``GuzzleHttp\Middleware::httpErrors`` 中间件时此选项才起作用。
+    默认情况下，在创建客户端时没有处理器的情况下会添加此中间件，并且在使用
+    ``GuzzleHttp\default_handler`` 来创建处理器时也会默认添加此中间件。
 
 json
 ----
 
-:Summary: The ``json`` option is used to easily upload JSON encoded data as the
-    body of a request. A Content-Type header of ``application/json`` will be
-    added if no Content-Type header is already present on the message.
-:Types:
-    Any PHP type that can be operated on by PHP's ``json_encode()`` function.
-:Default: None
-:Constant: ``GuzzleHttp\RequestOptions::JSON``
+:摘要: ``json`` 选项用来轻松将JSON编码的数据作为请求的主体上传，如果消息中没有预设
+    ``Content-Type`` 标头，则会将其设置为 ``application/json``。
+:类型: 能够被PHP的 ``json_encode()`` 函数操作的任何PHP类型。
+:默认值: 无
+:常量: ``GuzzleHttp\RequestOptions::JSON``
 
 .. code-block:: php
 
     $response = $client->request('PUT', '/put', ['json' => ['foo' => 'bar']]);
 
-Here's an example of using the ``tap`` middleware to see what request is sent
-over the wire.
+这里的例子使用了 ``tap`` 中间件用来查看发送了什么请求。
 
 .. code-block:: php
 
     use GuzzleHttp\Middleware;
 
-    // Grab the client's handler instance.
+    // 获取客户端的处理器实例。
     $clientHandler = $client->getConfig('handler');
-    // Create a middleware that echoes parts of the request.
+    // 创建一个回应(echoes)请求的部分的中间件。
     $tapMiddleware = Middleware::tap(function ($request) {
         echo $request->getHeaderLine('Content-Type');
         // application/json
@@ -592,32 +523,28 @@ over the wire.
 
 .. note::
 
-    This request option does not support customizing the Content-Type header
-    or any of the options from PHP's `json_encode() <http://www.php.net/manual/en/function.json-encode.php>`_
-    function. If you need to customize these settings, then you must pass the
-    JSON encoded data into the request yourself using the ``body`` request
-    option and you must specify the correct Content-Type header using the
-    ``headers`` request option.
+    此请求选项不支持自定义 ``Content-Type`` 标头或PHP的
+    `json_encode() <http://www.php.net/manual/en/function.json-encode.php>`_
+    函数中的任何选项。
+    如果需要自定义这些设置，则必须使用 ``body``
+    请求选项来自行将JSON编码数据传递到请求中，并且必须使用 ``headers``
+    请求选项来指定正确的 ``Content-Type`` 标头。
 
-    This option cannot be used with ``body``, ``form_params``, or ``multipart``
-
+    此选项不能与 ``body``、``form_params``、``multipart`` 一起使用。
 
 multipart
 ---------
 
-:Summary: Sets the body of the request to a `multipart/form-data` form.
-:Types: array
-:Constant: ``GuzzleHttp\RequestOptions::MULTIPART``
+:摘要: 设置请求的主体为 ``multipart/form-data`` 表单。
+:类型: 数组
+:常量: ``GuzzleHttp\RequestOptions::MULTIPART``
 
-The value of ``multipart`` is an array of associative arrays, each containing
-the following key value pairs:
+``multipart`` 的值是一个关联数组，每个元素包含以下键值对：
 
-- ``name``: (string, required) the form field name
-- ``contents``: (StreamInterface/resource/string, required) The data to use in
-  the form element.
-- ``headers``: (array) Optional associative array of custom headers to use with
-  the form element.
-- ``filename``: (string) Optional string to send as the filename in the part.
+- ``name``: (字符串, 必需) 表单字段名称
+- ``contents``: (StreamInterface/资源/字符串, 必需) 表单元素中要使用的数据
+- ``headers``: (数组) 可选，表单元素要使用的键值对数组
+- ``filename``: (字符串) 可选，要发送的文件名称
 
 .. code-block:: php
 
@@ -642,34 +569,30 @@ the following key value pairs:
 
 .. note::
 
-    ``multipart`` cannot be used with the ``form_params`` option. You will need to
-    use one or the other. Use ``form_params`` for ``application/x-www-form-urlencoded``
-    requests, and ``multipart`` for ``multipart/form-data`` requests.
+    ``multipart`` 不能与 ``form_params`` 选项一起使用。你只能使用其中一个。
+    对 ``application/x-www-form-urlencoded`` 请求使用
+    ``form_params``，对 ``multipart/form-data`` 请求使用 ``multipart``。
 
-    This option cannot be used with ``body``, ``form_params``, or ``json``
-
+    此选项不能与 ``body``、``form_params``、``json`` 一起使用。
 
 .. _on-headers:
 
 on_headers
 ----------
 
-:Summary: A callable that is invoked when the HTTP headers of the response have
-    been received but the body has not yet begun to download.
-:Types: - callable
-:Constant: ``GuzzleHttp\RequestOptions::ON_HEADERS``
+:摘要: 一个回调函数，当响应的HTTP标头被接收且主体部分还未开始下载的时候调用。
+:类型: - 回调
+:常量: ``GuzzleHttp\RequestOptions::ON_HEADERS``
 
-The callable accepts a ``Psr\Http\ResponseInterface`` object. If an exception
-is thrown by the callable, then the promise associated with the response will
-be rejected with a ``GuzzleHttp\Exception\RequestException`` that wraps the
-exception that was thrown.
+该回调接受一个 ``Psr\Http\ResponseInterface`` 对象。
+如果该回调抛出异常，则与该响应相关的Promise将会接收到一个封装着被抛出的异常的
+``GuzzleHttp\Exception\RequestException``。
 
-You may need to know what headers and status codes were received before data
-can be written to the sink.
+在数据写入下游(sink)之前，你应该需要知道接收到的标头与状态码。
 
 .. code-block:: php
 
-    // Reject responses that are greater than 1024 bytes.
+    // 拒绝大于1024字节的响应
     $client->request('GET', 'http://httpbin.org/stream/1024', [
         'on_headers' => function (ResponseInterface $response) {
             if ($response->getHeaderLine('Content-Length') > 1024) {
@@ -680,26 +603,20 @@ can be written to the sink.
 
 .. note::
 
-    When writing HTTP handlers, the ``on_headers`` function must be invoked
-    before writing data to the body of the response.
-
+    在编写HTTP处理器时，``on_headers`` 函数必须在将数据写入响应主体之前调用。
 
 .. _on_stats:
 
 on_stats
 --------
 
-:Summary: ``on_stats`` allows you to get access to transfer statistics of a
-    request and access the lower level transfer details of the handler
-    associated with your client. ``on_stats`` is a callable that is invoked
-    when a handler has finished sending a request. The callback is invoked
-    with transfer statistics about the request, the response received, or the
-    error encountered. Included in the data is the total amount of time taken
-    to send the request.
-:Types: - callable
-:Constant: ``GuzzleHttp\RequestOptions::ON_STATS``
+:摘要: ``on_stats`` 允许你获取请求的传输数据统计以及处理器在底层传输的详情。
+    ``on_stats`` 在处理器完成发送一个请求的时候被调用的一个回调。
+    调用该回调时会传递关于请求、接收到响应，或遇到错误的传输数据统计，以及发送请求数据时间的总量。
+:类型: - 回调
+:常量: ``GuzzleHttp\RequestOptions::ON_STATS``
 
-The callable accepts a ``GuzzleHttp\TransferStats`` object.
+该回调接受一个 ``GuzzleHttp\TransferStats`` 对象。
 
 .. code-block:: php
 
@@ -713,38 +630,34 @@ The callable accepts a ``GuzzleHttp\TransferStats`` object.
             echo $stats->getTransferTime() . "\n";
             var_dump($stats->getHandlerStats());
 
-            // You must check if a response was received before using the
-            // response object.
+            // 你必须在使用响应对象之前检查是否收到了一个响应。
             if ($stats->hasResponse()) {
                 echo $stats->getResponse()->getStatusCode();
             } else {
-                // Error data is handler specific. You will need to know what
-                // type of error data your handler uses before using this
-                // value.
+                // 错误的数据特定于处理器。因此在使用此值之前，你需要知道处理器使用的错误数据类型。
                 var_dump($stats->getHandlerErrorData());
             }
         }
     ]);
 
-
 progress
 --------
 
-:Summary: Defines a function to invoke when transfer progress is made.
-:Types: - callable
-:Default: None
-:Constant: ``GuzzleHttp\RequestOptions::PROGRESS``
+:摘要: 定义在创建传输进程(progress)时要调用的函数。
+:类型: - 回调
+:默认值: 无
+:常量: ``GuzzleHttp\RequestOptions::PROGRESS``
 
-The function accepts the following positional arguments:
+该函数接受以下位置参数：
 
-- the total number of bytes expected to be downloaded
-- the number of bytes downloaded so far
-- the total number of bytes expected to be uploaded
-- the number of bytes uploaded so far
+- 预期要下载的总字节数
+- 到目前为止下载的字节数
+- 预期上传的总字节数
+- 到目前为止上传的字节数
 
 .. code-block:: php
 
-    // Send a GET request to /get?foo=bar
+    // 发送GET请求到 /get?foo=bar
     $result = $client->request(
         'GET',
         '/',
@@ -755,92 +668,83 @@ The function accepts the following positional arguments:
                 $uploadTotal,
                 $uploadedBytes
             ) {
-                //do something
+                //做一些处理
             },
         ]
     );
-
 
 .. _proxy-option:
 
 proxy
 -----
 
-:Summary: Pass a string to specify an HTTP proxy, or an array to specify
-    different proxies for different protocols.
-:Types:
-    - string
-    - array
-:Default: None
-:Constant: ``GuzzleHttp\RequestOptions::PROXY``
+:摘要: 传入字符串来指定一个HTTP代理，或者是一个为不同协议指定不同代理的数组。
+:类型:
+    - 字符串
+    - 数组
+:默认值: 无
+:常量: ``GuzzleHttp\RequestOptions::PROXY``
 
-Pass a string to specify a proxy for all protocols.
+传入一个字符串为所有协议指定一个代理：
 
 .. code-block:: php
 
     $client->request('GET', '/', ['proxy' => 'tcp://localhost:8125']);
 
-Pass an associative array to specify HTTP proxies for specific URI schemes
-(i.e., "http", "https"). Provide a ``no`` key value pair to provide a list of
-host names that should not be proxied to.
+传入关联数组来为指定的URI Scheme指定特定的HTTP代理(比如"http", "https")。
+可以提供一个 ``no`` 键值对来定义一组不需要使用代理的主机名。
 
 .. note::
 
-    Guzzle will automatically populate this value with your environment's
-    ``NO_PROXY`` environment variable. However, when providing a ``proxy``
-    request option, it is up to your to provide the ``no`` value parsed from
-    the ``NO_PROXY`` environment variable
-    (e.g., ``explode(',', getenv('NO_PROXY'))``).
+    Guzzle会自动使用你的环境的 ``NO_PROXY`` 环境变量填充此值。
+    但是，当提供一个 ``proxy`` 请求选项时，需要由你提供从 ``NO_PROXY`` 环境变量解析的
+    ``no`` 值（例如，``explode(',', getenv('NO_PROXY'))``）。
 
 .. code-block:: php
 
     $client->request('GET', '/', [
         'proxy' => [
-            'http'  => 'tcp://localhost:8125', // Use this proxy with "http"
-            'https' => 'tcp://localhost:9124', // Use this proxy with "https",
-            'no' => ['.mit.edu', 'foo.com']    // Don't use a proxy with these
+            'http'  => 'tcp://localhost:8125', // 将此代理用于”http“，
+            'https' => 'tcp://localhost:9124', // 将此代理用于”https“，
+            'no' => ['.mit.edu', 'foo.com']    // 这些主机不使用代理
         ]
     ]);
 
 .. note::
 
-    You can provide proxy URLs that contain a scheme, username, and password.
-    For example, ``"http://username:password@192.168.16.1:10"``.
-
+    你可以提供包含一个模式(scheme)、用户名和密码的代理URL。例如，"http://username:password@192.168.16.1:10"。
 
 query
 -----
 
-:Summary: Associative array of query string values or query string to add to
-    the request.
-:Types:
-    - array
-    - string
-:Default: None
-:Constant: ``GuzzleHttp\RequestOptions::QUERY``
+:摘要: 要添加到请求的查询字符串的关联数组或查询字符串。
+:类型:
+    - 数组
+    - 字符串
+:默认值: 无
+:常量: ``GuzzleHttp\RequestOptions::QUERY``
 
 .. code-block:: php
 
-    // Send a GET request to /get?foo=bar
+    // 发送GET请求到 /get?foo=bar
     $client->request('GET', '/get', ['query' => ['foo' => 'bar']]);
 
-Query strings specified in the ``query`` option will overwrite all query string
-values supplied in the URI of a request.
+在 ``query`` 选项中指定的查询字符串，将会重写请求的URI中的所有查询字符串值。
 
 .. code-block:: php
 
-    // Send a GET request to /get?foo=bar
+    // 发送GET请求到 /get?foo=bar
     $client->request('GET', '/get?abc=123', ['query' => ['foo' => 'bar']]);
 
 read_timeout
 ------------
 
-:Summary: Float describing the timeout to use when reading a streamed body
-:Types: float
-:Default: Defaults to the value of the ``default_socket_timeout`` PHP ini setting
-:Constant: ``GuzzleHttp\RequestOptions::READ_TIMEOUT``
+:摘要: 描述读取流式正文时使用的超时
+:类型: 浮点
+:默认值: 默认为PHP ini设置的 ``default_socket_timeout`` 值
+:常量: ``GuzzleHttp\RequestOptions::READ_TIMEOUT``
 
-The timeout applies to individual read operations on a streamed body (when the ``stream`` option is enabled).
+超时适用于一个流式正文(streamed body)上的单个读取操作（在启用 ``stream`` 选项时）。
 
 .. code-block:: php
 
@@ -851,10 +755,10 @@ The timeout applies to individual read operations on a streamed body (when the `
 
     $body = $response->getBody();
 
-    // Returns false on timeout
+    // 超时时返回false
     $data = $body->read(1024);
 
-    // Returns false on timeout
+    // 超时时返回false
     $line = fgets($body->detach());
 
 .. _sink-option:
@@ -862,31 +766,29 @@ The timeout applies to individual read operations on a streamed body (when the `
 sink
 ----
 
-:Summary: Specify where the body of a response will be saved.
-:Types:
-    - string (path to file on disk)
-    - ``fopen()`` resource
+:摘要: 指定响应的主体部分将要保存的位置。
+:类型:
+    - 字符串 (磁盘上的文件的路径)
+    - ``fopen()`` 资源
     - ``Psr\Http\Message\StreamInterface``
 
-:Default: PHP temp stream
-:Constant: ``GuzzleHttp\RequestOptions::SINK``
+:默认值: PHP temp stream
+:常量: ``GuzzleHttp\RequestOptions::SINK``
 
-Pass a string to specify the path to a file that will store the contents of the
-response body:
+传入字符串来指定将要保存响应主体内容的文件的路径：
 
 .. code-block:: php
 
     $client->request('GET', '/stream/20', ['sink' => '/path/to/file']);
 
-Pass a resource returned from ``fopen()`` to write the response to a PHP stream:
+传入一个从 ``fopen()`` 返回的资源以将响应写入PHP流：
 
 .. code-block:: php
 
     $resource = fopen('/path/to/file', 'w');
     $client->request('GET', '/stream/20', ['sink' => $resource]);
 
-Pass a ``Psr\Http\Message\StreamInterface`` object to stream the response
-body to an open PSR-7 stream.
+传入一个 ``Psr\Http\Message\StreamInterface`` 对象以将响应写入到打开的PSR-7流：
 
 .. code-block:: php
 
@@ -896,9 +798,8 @@ body to an open PSR-7 stream.
 
 .. note::
 
-    The ``save_to`` request option has been deprecated in favor of the
-    ``sink`` request option. Providing the ``save_to`` option is now an alias
-    of ``sink``.
+    ``save_to`` 请求选项已被弃用，取而代之的是 ``sink`` 请求选项。提供的
+    ``save_to`` 选项现在是 ``sink`` 的别名。
 
 
 .. _ssl_key-option:
@@ -906,38 +807,32 @@ body to an open PSR-7 stream.
 ssl_key
 -------
 
-:Summary: Specify the path to a file containing a private SSL key in PEM
-        format. If a password is required, then set to an array containing the path
-        to the SSL key in the first array element followed by the password required
-        for the certificate in the second element.
-:Types:
-        - string
-        - array
-:Default: None
-:Constant: ``GuzzleHttp\RequestOptions::SSL_KEY``
+:摘要: 指定一个包含私有SSL密钥的PEM格式的文件的路径的字符串。
+    如果需要密码，则设置成一个数组，数组第一个元素为链接到私有SSL密钥的PEM格式的文件的路径，第二个元素为认证密码。
+:类型:
+    - 字符串
+    - 数组
+:默认值: 无
+:常量: ``GuzzleHttp\RequestOptions::SSL_KEY``
 
 .. note::
 
-    ``ssl_key`` is implemented by HTTP handlers. This is currently only
-    supported by the cURL handler, but might be supported by other third-part
-    handlers.
-
+    ``ssl_key`` 由HTTP处理器实现。目前只有cURL处理器支持此功能，但其他第三方处理器可能支持此功能。
 
 .. _stream-option:
 
 stream
 ------
 
-:Summary: Set to ``true`` to stream a response rather than download it all
-    up-front.
-:Types: bool
-:Default: ``false``
-:Constant: ``GuzzleHttp\RequestOptions::STREAM``
+:摘要: 设置成 ``true`` 则是一个流响应，而非下载响应。
+:类型: 布尔值
+:默认值: ``false``
+:常量: ``GuzzleHttp\RequestOptions::STREAM``
 
 .. code-block:: php
 
     $response = $client->request('GET', '/stream/20', ['stream' => true]);
-    // Read bytes off of the stream until the end of the stream is reached
+    // 从流中读取字节，直到到达流的末尾
     $body = $response->getBody();
     while (!$body->eof()) {
         echo $body->read(1024);
@@ -945,20 +840,16 @@ stream
 
 .. note::
 
-    Streaming response support must be implemented by the HTTP handler used by
-    a client. This option might not be supported by every HTTP handler, but the
-    interface of the response object remains the same regardless of whether or
-    not it is supported by the handler.
-
+    流式响应支持必须由客户端使用的HTTP处理器实现。
+    每个HTTP处理器可能都不支持此选项，但响应对象的接口保持不变，无论处理器是否支持它。
 
 synchronous
 -----------
 
-:Summary: Set to true to inform HTTP handlers that you intend on waiting on the
-    response. This can be useful for optimizations.
-:Types: bool
-:Default: none
-:Constant: ``GuzzleHttp\RequestOptions::SYNCHRONOUS``
+:摘要: 设置成 ``true`` 来通知HTTP处理器你要等待响应，这有利于优化。
+:类型: 布尔值
+:默认值: 无
+:常量: ``GuzzleHttp\RequestOptions::SYNCHRONOUS``
 
 
 .. _verify-option:
@@ -966,95 +857,84 @@ synchronous
 verify
 ------
 
-:Summary: Describes the SSL certificate verification behavior of a request.
+:摘要: 指定请求时验证SSL证书的行为。
 
-    - Set to ``true`` to enable SSL certificate verification and use the default
-      CA bundle provided by operating system.
-    - Set to ``false`` to disable certificate verification (this is insecure!).
-    - Set to a string to provide the path to a CA bundle to enable verification
-      using a custom certificate.
-:Types:
-    - bool
-    - string
-:Default: ``true``
-:Constant: ``GuzzleHttp\RequestOptions::VERIFY``
+    - 设置成 ``true`` 以启用SSL证书验证，默认使用操作系统提供的CA包。
+    - 设置成 ``false`` 以禁用证书验证(这是不安全的！)。
+    - 设置成一个字符串会启用验证，并使用该字符串作为自定义证书CA包的路径。
+:类型:
+    - 布尔值
+    - 字符串
+:默认值: ``true``
+:常量: ``GuzzleHttp\RequestOptions::VERIFY``
 
 .. code-block:: php
 
-    // Use the system's CA bundle (this is the default setting)
+    // 使用系统的CA包（这是默认设置）
     $client->request('GET', '/', ['verify' => true]);
 
-    // Use a custom SSL certificate on disk.
+    // 使用在磁盘上的自定义SSL证书。
     $client->request('GET', '/', ['verify' => '/path/to/cert.pem']);
 
-    // Disable validation entirely (don't do this!).
+    // 完全禁用验证（不要这样做！）。
     $client->request('GET', '/', ['verify' => false]);
 
-Not all system's have a known CA bundle on disk. For example, Windows and
-OS X do not have a single common location for CA bundles. When setting
-"verify" to ``true``, Guzzle will do its best to find the most appropriate
-CA bundle on your system. When using cURL or the PHP stream wrapper on PHP
-versions >= 5.6, this happens by default. When using the PHP stream
-wrapper on versions < 5.6, Guzzle tries to find your CA bundle in the
-following order:
+并非所有的系统磁盘上都存在CA包，比如，Windows和OS X并没有通用的本地CA包。
+当设置 ``verify`` 为 ``true`` 时，Guzzle将尽力在你的操作系统中找到合适的CA包.
+当使用cURL或PHP 5.6以上版本的流时，将使用默认以上行为。
+当使用PHP 5.6以下版本的流时，Guzzle将按以下顺序尝试查找CA包：
 
-1. Check if ``openssl.cafile`` is set in your php.ini file.
-2. Check if ``curl.cainfo`` is set in your php.ini file.
-3. Check if ``/etc/pki/tls/certs/ca-bundle.crt`` exists (Red Hat, CentOS,
-   Fedora; provided by the ca-certificates package)
-4. Check if ``/etc/ssl/certs/ca-certificates.crt`` exists (Ubuntu, Debian;
-   provided by the ca-certificates package)
-5. Check if ``/usr/local/share/certs/ca-root-nss.crt`` exists (FreeBSD;
-   provided by the ca_root_nss package)
-6. Check if ``/usr/local/etc/openssl/cert.pem`` (OS X; provided by homebrew)
-7. Check if ``C:\windows\system32\curl-ca-bundle.crt`` exists (Windows)
-8. Check if ``C:\windows\curl-ca-bundle.crt`` exists (Windows)
+1. 检查 ``php.ini`` 文件中是否设置了 ``openssl.cafile``。
+2. 检查 ``php.ini`` 文件中是否设置了 ``curl.cainfo``。
+3. 检查 ``/etc/pki/tls/certs/ca-bundle.crt``
+   是否存在 (Red Hat, CentOS, Fedora; 由 ``ca-certificates`` 包提供)
+4. 检查 ``/etc/ssl/certs/ca-certificates.crt``
+   是否存在 (Ubuntu, Debian; 由 ``ca-certificates`` 包提供)
+5. 检查 ``/usr/local/share/certs/ca-root-nss.crt`` 是否存在 (FreeBSD; 由 ``ca_root_nss`` 包提供)
+6. 检查 ``/usr/local/etc/openssl/cert.pem`` 是否存在 (OS X; 由 ``homebrew`` 提供)
+7. 检查 ``C:\windows\system32\curl-ca-bundle.crt`` 是否存在 (Windows)
+8. 检查 ``C:\windows\curl-ca-bundle.crt`` 是否存在 (Windows)
 
-The result of this lookup is cached in memory so that subsequent calls
-in the same process will return very quickly. However, when sending only
-a single request per-process in something like Apache, you should consider
-setting the ``openssl.cafile`` environment variable to the path on disk
-to the file so that this entire process is skipped.
+查找的结果将缓存在内存中，以便同一进程后续快速调用。
+然而在有些服务器如Apache中每个请求都在独立的进程中，你应该考虑设置 ``openssl.cafile``
+环境变量来指定到磁盘文件，以便整个过程都跳过。
 
-If you do not need a specific certificate bundle, then Mozilla provides a
-commonly used CA bundle which can be downloaded
-`here <https://raw.githubusercontent.com/bagder/ca-bundle/master/ca-bundle.crt>`_
-(provided by the maintainer of cURL). Once you have a CA bundle available on
-disk, you can set the "openssl.cafile" PHP ini setting to point to the path to
-the file, allowing you to omit the "verify" request option. Much more detail on
-SSL certificates can be found on the
-`cURL website <http://curl.haxx.se/docs/sslcerts.html>`_.
-
+如果你不需要特殊的证书包，可以使用Mozilla提供的通用CA包，你可以在
+`这里 <https://raw.githubusercontent.com/bagder/ca-bundle/master/ca-bundle.crt>`_
+下载(由cURL的维护者提供)。一旦磁盘有了CA包，你可以设置PHP ini配置文件，指定该文件的路径到变量
+``openssl.cafile`` 中，这样就可以在请求中省略 ``verify`` 参数。你可以在
+`cURL 网站 <http://curl.haxx.se/docs/sslcerts.html>`_
+发现更多关于SSL证书的细节。
 
 .. _timeout-option:
 
 timeout
 -------
 
-:Summary: Float describing the timeout of the request in seconds. Use ``0``
-        to wait indefinitely (the default behavior).
-:Types: float
-:Default: ``0``
-:Constant: ``GuzzleHttp\RequestOptions::TIMEOUT``
+:摘要: 请求超时的秒数。使用 ``0`` 标识无限期的等待(默认行为)。
+:类型: 浮点
+:默认值: ``0``
+:常量: ``GuzzleHttp\RequestOptions::TIMEOUT``
 
 .. code-block:: php
 
-    // Timeout if a server does not return a response in 3.14 seconds.
+    // 如果服务器在3.14秒内没有返回响应，则超时。
     $client->request('GET', '/delay/5', ['timeout' => 3.14]);
-    // PHP Fatal error:  Uncaught exception 'GuzzleHttp\Exception\RequestException'
-
+    // PHP致命错误：Uncaught exception 'GuzzleHttp\Exception\RequestException'
 
 .. _version-option:
 
 version
 -------
 
-:Summary: Protocol version to use with the request.
-:Types: string, float
-:Default: ``1.1``
-:Constant: ``GuzzleHttp\RequestOptions::VERSION``
+:摘要: 请求要使用到的协议版本。
+:类型:
+    - 字符串
+    - 浮点值
+:默认值: ``1.1``
+:常量: ``GuzzleHttp\RequestOptions::VERSION``
 
 .. code-block:: php
 
-    // Force HTTP/1.0
+    // 强制使用 HTTP/1.0
     $request = $client->request('GET', '/get', ['version' => 1.0]);

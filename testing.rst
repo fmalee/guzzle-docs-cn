@@ -1,16 +1,14 @@
 ======================
-Testing Guzzle Clients
+测试Guzzle客户端
 ======================
 
-Guzzle provides several tools that will enable you to easily mock the HTTP
-layer without needing to send requests over the internet.
+Guzzle提供了几种工具，使你可以轻松模拟HTTP层，而无需通过互联网发送请求。
 
-* Mock handler
-* History middleware
-* Node.js web server for integration testing
+* 模拟处理器
+* 历史中间件
+* 用于集成测试的Node.js Web服务器
 
-
-Mock Handler
+模拟处理器
 ============
 
 When testing HTTP clients, you often need to simulate specific scenarios like
@@ -51,7 +49,7 @@ When no more responses are in the queue and a request is sent, an
 ``OutOfBoundsException`` is thrown.
 
 
-History Middleware
+历史中间件
 ==================
 
 When using things like the ``Mock`` handler, you often need to know if the
@@ -68,9 +66,9 @@ history of the requests that were sent by a client.
     $container = [];
     $history = Middleware::history($container);
 
-    $handlerStack = HandlerStack::create(); 
+    $handlerStack = HandlerStack::create();
     // or $handlerStack = HandlerStack::create($mock); if using the Mock handler.
-    
+
     // Add the history middleware to the handler stack.
     $handlerStack->push($history);
 
@@ -99,7 +97,7 @@ history of the requests that were sent by a client.
     }
 
 
-Test Web Server
+测试Web服务器
 ===============
 
 Using mock responses is almost always enough when testing a web service client.
@@ -113,7 +111,7 @@ over the internet.
 - Tests have no external dependencies
 
 
-Using the test server
+使用测试服务器
 ---------------------
 
 .. warning::
