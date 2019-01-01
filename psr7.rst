@@ -60,8 +60,6 @@ Guzzle依赖于 ``guzzlehttp/psr7`` Composer包来实现 ``PSR-7`` 的消息。
     }
 
 你可以使用 ``getHeader()`` 方法将所有标头值检索为字符串数组。
-You can retrieve all the header values as an array of strings using
-``getHeader()``.
 
 .. code-block:: php
 
@@ -259,7 +257,7 @@ RFC 7231 的自定义方法（如“MOVE”）。
 `RFC 3986 section 3.4 <https://tools.ietf.org/html/rfc3986#section-3.4>`_
 进行百分比编码(percent-encoded)。
 
-回应
+响应
 =========
 
 响应是客户端在发送HTTP请求消息后从服务器接收的HTTP消息。
