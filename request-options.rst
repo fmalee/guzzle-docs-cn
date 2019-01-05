@@ -142,7 +142,8 @@ auth
     目前仅在使用cURL处理器时支持此类型，但计划创建可与任何HTTP处理器一起使用的替代。
 
 ``ntlm``
-    使用`Microsoft NTLM 认证 <https://msdn.microsoft.com/en-us/library/windows/desktop/aa378749(v=vs.85).aspx>`_
+    使用
+    `Microsoft NTLM认证 <https://msdn.microsoft.com/en-us/library/windows/desktop/aa378749(v=vs.85).aspx>`_
     (必须被HTTP处理器支持)。
 
 .. code-block:: php
