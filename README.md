@@ -38,33 +38,32 @@
 - `Callable`：回调
 - `Decorator`：装饰器
 
-## 生成主题
+## 构建文档
 
-官方有自己的[专用主题](https://github.com/guzzle/guzzle_sphinx_theme)，但是需要手动安装：
+### Docker
 
-```bash
-$ pip install guzzle_sphinx_theme
+```shell
+# 进入文档目录
+$ cd guzzle-docs-cn
+# 构建Docker镜像
+# 因为有不少依赖，所以不能使用Sphinx官方的镜像
+$ docker build -t guzzle:sphinx .
+# 运行新生成的Docker镜像，并生成HTML文档
+$ docker run --rm -v $(pwd):/docs guzzle:sphinx make html
 ```
 
-### 如何生成
+### 本机环境
 
-1. 按照[pip安装](https://pip.pypa.io/en/stable/installing/)文档中的说明安装 [pip](https://pip.pypa.io/en/stable/)；
-
-2. 安装 [Sphinx](http://sphinx-doc.org/) 和 [PHP和Symfony的Sphinx扩展](https://github.com/fabpot/sphinx-php) （根据你的系统，你可能需要以root用户身份执行此命令）：
-
-```bash
-$ pip install sphinx~=1.3.0 git+https://github.com/fabpot/sphinx-php.git
-```
-
-3. 运行以下命令以HTML格式构建文档：
-
-```bash
-# 跳转到项目目录
-$ cd ~/guzzle-cn
+```shell
+# 进入文档目录
+$ cd guzzle-docs-cn
+# 安装相关依赖
+$ python3 -m pip install --no-cache-dir -r requirements.txt
+# 生成HTML文档
 $ make html
 ```
 
-生成的文档可在 `_build/html` 目录中找到。
+生成的文档在 **`guzzle-docs-cn/__build/html`** 目录
 
 ## 资源
 
