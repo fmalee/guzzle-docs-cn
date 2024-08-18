@@ -488,6 +488,30 @@ http_errors
     默认情况下，在创建客户端时没有处理器的情况下会添加此中间件，并且在使用
     ``GuzzleHttp\default_handler`` 来创建处理器时也会默认添加此中间件。
 
+
+idn_conversion
+--------------
+
+:摘要: 国际化域名（IDN）支持（如果 ``intl`` 扩展可用，则默认启用）。
+:类型:
+    - bool
+    - int
+:默认值: 如果 ``intl`` 扩展可用（对于PHP 7.2+，ICU库为4.6+），则为 ``true``，否则为 ``false``
+:常量: ``GuzzleHttp\RequestOptions::IDN_CONVERSION``
+
+.. code-block:: php
+
+    $client->request('GET', 'https://яндекс.рф');
+    // яндекс.рф 在传递给处理器之前被转换为 xn--d1acpjx3f.xn--p1ai
+
+    $res = $client->request('GET', 'https://яндекс.рф', ['idn_conversion' => false]);
+    // 域部分（яндекс.рф）保持不变
+
+启用/禁用IDN支持，也可以通过组合 IDNA_* 常量（IDNA_ERROR_* 除外）进行精确控制。要获取更多详细信息，请参阅
+`idn_to_ascii() <https://www.php.net/manual/en/function.idn-to-ascii.php>`_ 文档
+中的 ``$options`` 参数。
+
+
 json
 ----
 
@@ -651,7 +675,7 @@ progress
 
 该函数接受以下位置参数：
 
-- 预期要下载的总字节数
+- 预期要下载的总字节数，如果未知，则为零
 - 到目前为止下载的字节数
 - 预期上传的总字节数
 - 到目前为止上传的字节数

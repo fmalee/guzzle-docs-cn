@@ -55,6 +55,22 @@ cURL提供大量的 `可自定义选项 <http://us1.php.net/curl_setopt>`_。
         ]
     ]);
 
+如果你使用带有cURL多处理器的异步请求并希望对其进行调整，可以在
+``CurlMultiHandler`` 构造函数的 **options** 键中指定其他选项作为关联数组。
+
+.. code-block:: php
+
+    use \GuzzleHttp\Client;
+    use \GuzzleHttp\HandlerStack;
+    use \GuzzleHttp\Handler\CurlMultiHandler;
+
+    $client = new Client(['handler' => HandlerStack::create(new CurlMultiHandler([
+        'options' => [
+            CURLMOPT_MAX_TOTAL_CONNECTIONS => 50,
+            CURLMOPT_MAX_HOST_CONNECTIONS => 5,
+        ]
+    ]))]);
+
 
 如何添加自定义流上下文选项？
 ============================================

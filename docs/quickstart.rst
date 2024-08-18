@@ -56,7 +56,7 @@
 ``handler``
     (callable) 传输HTTP请求的回调函数。该函数被调用的时候包含一个 ``Psr7\Http\Message\RequestInterface``
     以及传输选项数组，并且必须返回 ``GuzzleHttp\Promise\PromiseInterface``，成功的话使用
-    ``Psr7\Http\Message\ResponseInterface`` 填充。``handler`` 是一个构造方法，不能在请求参数里被重写。
+    ``Psr7\Http\Message\ResponseInterface`` 填充。
 
 ``...``
     (mixed) 构造方法中传入的其他所有参数都被用来当作每次请求的默认参数。
@@ -166,8 +166,8 @@
     $responses = Promise\settle($promises)->wait();
 
     // 你可以使用 promise 的键来访问每个响应
-    echo $responses['image']->getHeader('Content-Length')[0]
-    echo $responses['png']->getHeader('Content-Length')[0]
+    echo $responses['image']->getHeader('Content-Length')[0];
+    echo $responses['png']->getHeader('Content-Length')[0];
 
 当你想发送不确定数量的请求时，可以使用 ``GuzzleHttp\Pool`` 对象：
 

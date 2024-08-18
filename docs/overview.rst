@@ -11,7 +11,8 @@
 
 .. note::
 
-    如果没有安装cURL，Guzzle处理HTTP请求的时候不再使用cURL，而是使用PHP流处理，或者你也可以提供自己的发送HTTP请求的处理方式。
+    Guzzle不再需要cURL来发送HTTP请求。如果未安装cURL，Guzzle将使用PHP流包装器发送HTTP请求。
+    或者你也可以提供自己的发送HTTP请求的处理方式。请记住，发送并发请求仍然需要cURL。
 
 .. _installation:
 

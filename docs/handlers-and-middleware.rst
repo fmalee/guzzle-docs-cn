@@ -44,7 +44,7 @@ Guzzle客户端使用处理器和中间件系统来发送HTTP请求。
   1. ``prepare_body`` - 没有关于响应处理的操作。
   2. ``cookies`` - 将响应Cookie提取到Cookie Jar中。
   3. ``allow_redirects`` - 遵循重定向。
-  4. ``http_errors`` - 当响应状态码 ``>=`` 300时抛出异常。
+  4. ``http_errors`` - 当响应状态码 ``>=`` 400时抛出异常。
 
 如果没有提供 ``$handler`` 参数，``GuzzleHttp\HandlerStack::create()``
 将根据你的系统上可用的扩展来选择最合适的处理器。
