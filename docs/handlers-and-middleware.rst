@@ -195,28 +195,29 @@ stack.
 
 .. code-block:: php
 
-    use Psr\Http\Message\RequestInterface;
+    use GuzzleHttp\Client;
     use GuzzleHttp\HandlerStack;
     use GuzzleHttp\Middleware;
-    use GuzzleHttp\Client;
+    use GuzzleHttp\Utils;
+    use Psr\Http\Message\RequestInterface;
 
     $stack = new HandlerStack();
-    $stack->setHandler(\GuzzleHttp\choose_handler());
+    $stack->setHandler(Utils::chooseHandler());
 
     $stack->push(Middleware::mapRequest(function (RequestInterface $r) {
         echo 'A';
         return $r;
-    });
+    }));
 
     $stack->push(Middleware::mapRequest(function (RequestInterface $r) {
         echo 'B';
         return $r;
-    });
+    }));
 
     $stack->push(Middleware::mapRequest(function (RequestInterface $r) {
         echo 'C';
         return $r;
-    });
+    }));
 
     $client->request('GET', 'http://httpbin.org/');
     // echoes 'ABC';
@@ -224,7 +225,7 @@ stack.
     $stack->unshift(Middleware::mapRequest(function (RequestInterface $r) {
         echo '0';
         return $r;
-    });
+    }));
 
     $client = new Client(['handler' => $stack]);
     $client->request('GET', 'http://httpbin.org/');
@@ -240,17 +241,17 @@ stack.
     // 使用名称来添加一个中间件
     $stack->push(Middleware::mapRequest(function (RequestInterface $r) {
         return $r->withHeader('X-Foo', 'Bar');
-    }, 'add_foo');
+    }, 'add_foo'));
 
     // 在命名的中间件之前添加中间件(unshift before).
     $stack->before('add_foo', Middleware::mapRequest(function (RequestInterface $r) {
         return $r->withHeader('X-Baz', 'Qux');
-    }, 'add_baz');
+    }, 'add_baz'));
 
     // 在命名的中间件之后添加一个中间件 (pushed after)
     $stack->after('add_baz', Middleware::mapRequest(function (RequestInterface $r) {
         return $r->withHeader('X-Lorem', 'Ipsum');
-    });
+    }));
 
     // 按名称移除中间件
     $stack->remove('add_foo');

@@ -95,7 +95,7 @@ Guzzle提供了一个便利功能，可用于解析这些类型的标头：
         'Link' => '<http:/.../front.jpeg>; rel="front"; type="image/jpeg"'
     ]);
 
-    $parsed = Psr7\parse_header($request->getHeader('Link'));
+    $parsed = Psr7\Header::parse($request->getHeader('Link'));
     var_export($parsed);
 
 将输出：
@@ -130,9 +130,9 @@ Guzzle提供了一个便利功能，可用于解析这些类型的标头：
 此流用于上传数据和下载数据。默认情况下，Guzzle会将消息正文存储在使用PHP临时流的流中。
 当正文的大小超过 ``2MB`` 时，流将自动将数据切换存储在磁盘，而不是内存中（保护应用以免内存耗尽）。
 
-为消息创建正文的最简单方法是使用 ``GuzzleHttp\Psr7`` 命名空间中的 ``stream_for``
-函数(``GuzzleHttp\Psr7\stream_for``)。
-此函数接受字符串、资源、回调、迭代器以及其他流(Stremable)，并返回一个
+为消息创建正文的最简单方法是使用 ``GuzzleHttp\Psr7\Utils`` 类中的 ``streamFor``
+方法（``Utils::streamFor``）。
+此方法接受字符串、资源、回调、迭代器以及其他流(Stremable)，并返回一个
 ``Psr\Http\Message\StreamInterface`` 实例。
 
 可以将请求或响应的正文强制转换为字符串，也可以根据需要从流中读取和写入字节。
@@ -197,7 +197,7 @@ RFC 7231 的自定义方法（如“MOVE”）。
 模式
 ------
 
-一个请求的 `scheme <http://tools.ietf.org/html/rfc3986#section-3.1>`_
+一个请求的 `scheme <https://datatracker.ietf.org/doc/html/rfc3986#section-3.1>`_
 用以指定发送请求时要使用的协议。使用Guzzle时，模式可以设置为 ``http`` 或 ``https``。
 
 .. code-block:: php
@@ -240,7 +240,7 @@ RFC 7231 的自定义方法（如“MOVE”）。
     echo $request->getUri()->getPath(); // /get
 
 将自动过滤路径的内容以确保路径中仅存在允许的字符。路径中不允许的任何字符都将根据
-`RFC 3986 section 3.3 <https://tools.ietf.org/html/rfc3986#section-3.3>`_
+`RFC 3986 section 3.3 <https://datatracker.ietf.org/doc/html/rfc3986#section-3.3>`_
 进行百分比编码(percent-encoded)。
 
 查询字符串
@@ -254,7 +254,7 @@ RFC 7231 的自定义方法（如“MOVE”）。
     echo $request->getUri()->getQuery(); // foo=bar
 
 将自动过滤查询字符串的内容以确保查询字符串中仅存在允许的字符。查询字符串中不允许的任何字符都将根据
-`RFC 3986 section 3.4 <https://tools.ietf.org/html/rfc3986#section-3.4>`_
+`RFC 3986 section 3.4 <https://datatracker.ietf.org/doc/html/rfc3986#section-3.4>`_
 进行百分比编码(percent-encoded)。
 
 响应
@@ -314,7 +314,7 @@ Guzzle使用 ``guzzlehttp/psr7`` 包提供流支持。有关使用流、创建�
 创建流
 ----------------
 
-创建流的最佳方法是使用 ``GuzzleHttp\Psr7\stream_for`` 函数。此函数接受字符串、从 ``fopen()``
+创建流的最佳方法是使用 ``GuzzleHttp\Psr7\Utils::streamFor`` 方法。此方法接受字符串、从 ``fopen()``
 中返回的资源、实现 ``__toString()`` 的对象、迭代器、回调以及和
 ``Psr\Http\Message\StreamInterface`` 实例。
 
@@ -322,7 +322,7 @@ Guzzle使用 ``guzzlehttp/psr7`` 包提供流支持。有关使用流、创建�
 
     use GuzzleHttp\Psr7;
 
-    $stream = Psr7\stream_for('string data');
+    $stream = Psr7\Utils::streamFor('string data');
     echo $stream;
     // 字符串数据
     echo $stream->read(3);
@@ -348,22 +348,22 @@ Guzzle使用 ``guzzlehttp/psr7`` 包提供流支持。有关使用流、创建�
     };
 
     $iter = $generator(1024);
-    $stream = Psr7\stream_for($iter);
+    $stream = Psr7\Utils::streamFor($iter);
     echo $stream->read(3); // ...
 
 元数据
 --------
 
 流通过 ``getMetadata()`` 方法暴露流元数据。此方法提供在调用PHP的
-`stream_get_meta_data()函数 <http://php.net/manual/en/function.stream-get-meta-data.php>`_
+`stream_get_meta_data()函数 <https://www.php.net/manual/en/function.stream-get-meta-data.php>`_
 时将检索的数据，并且可以选择暴露其他自定义数据。
 
 .. code-block:: php
 
     use GuzzleHttp\Psr7;
 
-    $resource = fopen('/path/to/file', 'r');
-    $stream = Psr7\stream_for($resource);
+    $resource = Psr7\Utils::tryFopen('/path/to/file', 'r');
+    $stream = Psr7\Utils::streamFor($resource);
     echo $stream->getMetadata('uri');
     // /path/to/file
     var_export($stream->isReadable());

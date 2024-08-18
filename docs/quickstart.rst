@@ -23,13 +23,13 @@
         'timeout'  => 2.0,
     ]);
 
-客户端在Guzzle6中是不可变的，这意味着你无法在客户端被创建后更改其使用的默认值。
+客户端在Guzzle中是不可变的，这意味着你无法在客户端被创建后更改其使用的默认值。
 
 客户端构造函数接受一个关联的选项数组：
 
 ``base_uri``
     (string|UriInterface) 基础URI用来合并到相关URI，可以是一个字符串或者 ``UriInterface`` 实例。
-    当提供了一个相对的URI，则将合并到基础URI，遵循的规则请参考 `RFC 3986, section 2 <http://tools.ietf.org/html/rfc3986#section-5.2>`_。
+    当提供了一个相对的URI，则将合并到基础URI，遵循的规则请参考 `RFC 3986, section 5.2 <https://datatracker.ietf.org/doc/html/rfc3986#section-5.2>`_。
 
     .. code-block:: php
 
@@ -49,6 +49,7 @@
     ``http://foo.com/foo``   ``/bar``            ``http://foo.com/bar``
     ``http://foo.com/foo``   ``bar``             ``http://foo.com/bar``
     ``http://foo.com/foo/``  ``bar``             ``http://foo.com/foo/bar``
+    ``http://foo.com/foo/``  ``/bar``            ``http://foo.com/bar``
     ``http://foo.com``       ``http://baz.com``  ``http://baz.com``
     ``http://foo.com/?bar``  ``bar``             ``http://foo.com/bar``
     =======================  ==================  ===============================
@@ -160,14 +161,19 @@
     ];
 
     // 等待请求完成; 如果有任何一个请求失败，则抛出 ConnectException
-    $responses = Promise\unwrap($promises);
-
-    // 等待请求完成，即使其中一些请求已经失败
-    $responses = Promise\settle($promises)->wait();
+    $responses = Promise\Utils::unwrap($promises);
 
     // 你可以使用 promise 的键来访问每个响应
     echo $responses['image']->getHeader('Content-Length')[0];
     echo $responses['png']->getHeader('Content-Length')[0];
+
+    // 等待请求完成，即使其中一些请求已经失败
+    $responses = Promise\Utils::settle($promises)->wait();
+
+    // 上面返回的值被封装在一个有两个键的数组中：“state”（已完成或已拒绝）和“value”（包含响应）
+    echo $responses['image']['state']; // 返回 "fulfilled"
+    echo $responses['image']['value']->getHeader('Content-Length')[0];
+    echo $responses['png']['value']->getHeader('Content-Length')[0];
 
 当你想发送不确定数量的请求时，可以使用 ``GuzzleHttp\Pool`` 对象：
 
@@ -305,17 +311,19 @@ Guzzle为上传数据提供了一些方法。
 
 .. code-block:: php
 
+    use GuzzleHttp\Psr7;
+
     // 提供字符串作为正文
     $r = $client->request('POST', 'http://httpbin.org/post', [
         'body' => 'raw data'
     ]);
 
     // 提供一个fopen资源
-    $body = fopen('/path/to/file', 'r');
+    $body = Psr7\Utils::tryFopen('/path/to/file', 'r');
     $r = $client->request('POST', 'http://httpbin.org/post', ['body' => $body]);
 
-    // 使用 stream_for() 函数创建一个PSR-7流。
-    $body = \GuzzleHttp\Psr7\stream_for('hello!');
+    // 使用 Utils::streamFor 方法创建一个PSR-7流。
+    $body = Psr7\Utils::streamFor('hello!');
     $r = $client->request('POST', 'http://httpbin.org/post', ['body' => $body]);
 
 上传JSON数据以及设置合适的标头的简单方式就是使用 ``json`` 请求选项：
@@ -362,6 +370,8 @@ POST/表单请求
 
 .. code-block:: php
 
+    use GuzzleHttp\Psr7;
+
     $response = $client->request('POST', 'http://httpbin.org/post', [
         'multipart' => [
             [
@@ -370,7 +380,7 @@ POST/表单请求
             ],
             [
                 'name'     => 'file_name',
-                'contents' => fopen('/path/to/file', 'r')
+                'contents' => Psr7\Utils::tryFopen('/path/to/file', 'r')
             ],
             [
                 'name'     => 'other_file',
@@ -476,9 +486,9 @@ Guzzle可以使用 ``cookies`` 请求选项为你维护一个Cookie会话。
 .. code-block:: none
 
     . \RuntimeException
-    ├── SeekException (实现了 GuzzleException)
     └── TransferException (实现了 GuzzleException)
         └── RequestException
+        ├── ConnectException (实现了 NetworkExceptionInterface)
             ├── BadResponseException
             │   ├── ServerException
             │   └── ClientException
@@ -487,26 +497,8 @@ Guzzle可以使用 ``cookies`` 请求选项为你维护一个Cookie会话。
 
 如果请求传输过程中出现错误，则Guzzle将会抛出异常。
 
-- 在发生网络错误(连接超时、DNS错误等)时，将会抛出 ``GuzzleHttp\Exception\RequestException``
-  异常，该异常继承自 ``GuzzleHttp\Exception\TransferException``。
-  捕获这个异常，将可以捕获在传输请求过程中抛出的任何异常。
-
-  .. code-block:: php
-
-      use GuzzleHttp\Psr7;
-      use GuzzleHttp\Exception\RequestException;
-
-      try {
-          $client->request('GET', 'https://github.com/_abc_123_404');
-      } catch (RequestException $e) {
-          echo Psr7\str($e->getRequest());
-          if ($e->hasResponse()) {
-              echo Psr7\str($e->getResponse());
-          }
-      }
-
 - 发生网络错误时会抛出一个 ``GuzzleHttp\Exception\ConnectException`` 异常，该异常继承自
-  ``GuzzleHttp\Exception\RequestException``。
+  ``GuzzleHttp\Exception\TransferException``。
 
 - 如果将 ``http_errors`` 请求选项设置成 ``true``，则将在发生 ``400``
   级别的错误时抛出 ``GuzzleHttp\Exception\ClientException`` 异常，该异常继承自 ``GuzzleHttp\Exception\BadResponseException``，而
@@ -520,8 +512,8 @@ Guzzle可以使用 ``cookies`` 请求选项为你维护一个Cookie会话。
       try {
           $client->request('GET', 'https://github.com/_abc_123_404');
       } catch (ClientException $e) {
-          echo Psr7\str($e->getRequest());
-          echo Psr7\str($e->getResponse());
+          echo Psr7\Message::toString($e->getRequest());
+          echo Psr7\Message::toString($e->getResponse());
       }
 
 - 如果将 ``http_errors`` 请求选项设置成 ``true``，则将在发生 ``500``

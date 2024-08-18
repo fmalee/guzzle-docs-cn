@@ -106,6 +106,12 @@ allow_redirects
     默认情况下，在创建客户端时没有处理器的情况下会添加此中间件，并且在使用
     ``GuzzleHttp\HandlerStack::create`` 来创建处理器时也会默认添加此中间件。
 
+.. note::
+
+    当使用 ``GuzzleHttp\Client::sendRequest()`` 发出请求时，此选项 **没有** 无效。
+    为了符合PSR-18，任何重定向响应都会按原样返回。
+
+
 auth
 ----
 
@@ -122,7 +128,7 @@ auth
 
 ``basic``
     在 ``Authorization`` 标头使用
-    `HTTP基础认证 <http://www.ietf.org/rfc/rfc2069.txt>`_ (如果没有指定的话为默认设置)。
+    `HTTP基础认证 <http://www.ietf.org/rfc/rfc7617.txt>`_ (如果没有指定的话为默认设置)。
 
 .. code-block:: php
 
@@ -181,7 +187,7 @@ body
   .. code-block:: php
 
       // 你可以发送使用流资源作为正文的请求。
-      $resource = fopen('http://httpbin.org', 'r');
+      $resource = \GuzzleHttp\Psr7\Utils::tryFopen('http://httpbin.org', 'r');
       $client->request('PUT', '/put', ['body' => $resource]);
 
 - ``Psr\Http\Message\StreamInterface``
@@ -189,7 +195,7 @@ body
   .. code-block:: php
 
       // 你可以发送使用Guzzle流对象作为正文的请求
-      $stream = GuzzleHttp\Psr7\stream_for('contents...');
+      $stream = GuzzleHttp\Psr7\Utils::streamFor('contents...');
       $client->request('POST', '/post', ['body' => $stream]);
 
 .. note::
@@ -234,7 +240,7 @@ cookies
 
     仅你的处理器具有 ``GuzzleHttp\Middleware::cookies`` 中间件时此选项才起作用。
     默认情况下，在创建客户端时没有处理器的情况下会添加此中间件，并且在使用
-    ``GuzzleHttp\default_handler`` 来创建处理器时也会默认添加此中间件。
+    ``GuzzleHttp\HandlerStack::create`` 来创建处理器时也会默认添加此中间件。
 
 .. tip::
 
@@ -245,7 +251,7 @@ cookies
 connect_timeout
 ---------------
 
-:摘要: 表示等待服务器响应超时的最大值，使用 ``0`` 将无限等待 (默认行为).
+:摘要: 表示等待服务器响应超时的最大值，使用 ``0`` 将等待300秒（默认行为）.
 :类型: 浮点
 :默认值: ``0``
 :常量: ``GuzzleHttp\RequestOptions::CONNECT_TIMEOUT``
@@ -258,6 +264,28 @@ connect_timeout
 .. note::
 
     用于发送请求的HTTP处理器必须支持此设置。目前只有内置的cURL处理器支持此选项。
+
+
+.. _crypto_method-option:
+
+crypto_method
+---------------
+
+:摘要: 描述要使用的最低TLS协议版本的值。
+:类型: int
+:默认值: None
+:常量: ``GuzzleHttp\RequestOptions::CRYPTO_METHOD``
+
+.. code-block:: php
+
+    $client->request('GET', '/foo', ['crypto_method' => STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT]);
+
+.. note::
+
+    此设置必须设置为 ``STREAM_CRYPTO_METHOD_TLS*_CLIENT`` 常量之一。
+    要使用TLS 1.3，需要PHP 7.4或更高版本；要指定加密方法，需要cURL7.34.0或更高版本；
+    要使用TLS 1.3，则需要cURL 7.52.0或更高版本。
+
 
 .. _debug-option:
 
@@ -330,6 +358,25 @@ decode_content
 
     // 将“gzip”作为Accept-Encoding标头传递。
     $client->request('GET', '/foo.js', ['decode_content' => 'gzip']);
+
+.. warning::
+
+    除非你明确写明或将字符串值传递给 ``decode_content``，否则不会发送 ``Accept-Encoding`` 标头。
+    这 `相当于 <https://www.rfc-editor.org/rfc/rfc9110#field.accept-encoding>`
+    发送 ``Accept-Encoding: *``。
+    大多数服务器可能会返回一个未压缩的正文作为响应，但有些服务器可能会选择使用你的系统不支持的压缩方法。
+
+    为了启用压缩，并确保只使用支持的编码方法，您应该让curl发送 ``Accept-Encoding`` 标头：
+
+    .. code-block:: php
+
+        // 委托curl选择压缩方法
+        $client->request('GET', '/foo.js', [
+            'curl' => [
+                \CURLOPT_ENCODING => '',
+            ],
+        ]);
+
 
 .. _delay-option:
 
@@ -486,17 +533,17 @@ http_errors
 
     仅你的处理器具有 ``GuzzleHttp\Middleware::httpErrors`` 中间件时此选项才起作用。
     默认情况下，在创建客户端时没有处理器的情况下会添加此中间件，并且在使用
-    ``GuzzleHttp\default_handler`` 来创建处理器时也会默认添加此中间件。
+    ``GuzzleHttp\HandlerStack::create`` 来创建处理器时也会默认添加此中间件。
 
 
 idn_conversion
 --------------
 
-:摘要: 国际化域名（IDN）支持（如果 ``intl`` 扩展可用，则默认启用）。
+:摘要: 国际化域名（IDN）支持。
 :类型:
     - bool
     - int
-:默认值: 如果 ``intl`` 扩展可用（对于PHP 7.2+，ICU库为4.6+），则为 ``true``，否则为 ``false``
+:默认值: ``false``
 :常量: ``GuzzleHttp\RequestOptions::IDN_CONVERSION``
 
 .. code-block:: php
@@ -541,9 +588,10 @@ json
         // {"foo":"bar"}
     });
 
+    // $handler 变量是在选项中传递给客户端构造函数的处理器。
     $response = $client->request('PUT', '/put', [
         'json'    => ['foo' => 'bar'],
-        'handler' => $tapMiddleware($clientHandler)
+        'handler' => $tapMiddleware($handler)
     ]);
 
 .. note::
@@ -573,6 +621,8 @@ multipart
 
 .. code-block:: php
 
+    use GuzzleHttp\Psr7;
+
     $client->request('POST', '/post', [
         'multipart' => [
             [
@@ -582,11 +632,11 @@ multipart
             ],
             [
                 'name'     => 'baz',
-                'contents' => fopen('/path/to/file', 'r')
+                'contents' => Psr7\Utils::tryFopen('/path/to/file', 'r')
             ],
             [
                 'name'     => 'qux',
-                'contents' => fopen('/path/to/file', 'r'),
+                'contents' => Psr7\Utils::tryFopen('/path/to/file', 'r'),
                 'filename' => 'custom_filename.txt'
             ],
         ]
@@ -609,7 +659,7 @@ on_headers
 :类型: - 回调
 :常量: ``GuzzleHttp\RequestOptions::ON_HEADERS``
 
-该回调接受一个 ``Psr\Http\ResponseInterface`` 对象。
+该回调接受一个 ``Psr\Http\Message\ResponseInterface`` 对象。
 如果该回调抛出异常，则与该响应相关的Promise将会接收到一个封装着被抛出的异常的
 ``GuzzleHttp\Exception\RequestException``。
 
@@ -714,7 +764,7 @@ proxy
 
 .. code-block:: php
 
-    $client->request('GET', '/', ['proxy' => 'tcp://localhost:8125']);
+    $client->request('GET', '/', ['proxy' => 'http://localhost:8125']);
 
 传入关联数组来为指定的URI Scheme指定特定的HTTP代理(比如"http", "https")。
 可以提供一个 ``no`` 键值对来定义一组不需要使用代理的主机名。
@@ -729,8 +779,8 @@ proxy
 
     $client->request('GET', '/', [
         'proxy' => [
-            'http'  => 'tcp://localhost:8125', // 将此代理用于”http“，
-            'https' => 'tcp://localhost:9124', // 将此代理用于”https“，
+            'http'  => 'http://localhost:8125', // 将此代理用于”http“，
+            'https' => 'http://localhost:9124', // 将此代理用于”https“，
             'no' => ['.mit.edu', 'foo.com']    // 这些主机不使用代理
         ]
     ]);
@@ -810,15 +860,15 @@ sink
 
 .. code-block:: php
 
-    $resource = fopen('/path/to/file', 'w');
+    $resource = \GuzzleHttp\Psr7\Utils::tryFopen('/path/to/file', 'w');
     $client->request('GET', '/stream/20', ['sink' => $resource]);
 
 传入一个 ``Psr\Http\Message\StreamInterface`` 对象以将响应写入到打开的PSR-7流：
 
 .. code-block:: php
 
-    $resource = fopen('/path/to/file', 'w');
-    $stream = GuzzleHttp\Psr7\stream_for($resource);
+    $resource = \GuzzleHttp\Psr7\Utils::tryFopen('/path/to/file', 'w');
+    $stream = \GuzzleHttp\Psr7\Utils::streamFor($resource);
     $client->request('GET', '/stream/20', ['save_to' => $stream]);
 
 .. note::
@@ -904,29 +954,9 @@ verify
     // 完全禁用验证（不要这样做！）。
     $client->request('GET', '/', ['verify' => false]);
 
-并非所有的系统磁盘上都存在CA包，比如，Windows和OS X并没有通用的本地CA包。
-当设置 ``verify`` 为 ``true`` 时，Guzzle将尽力在你的操作系统中找到合适的CA包.
-当使用cURL或PHP 5.6以上版本的流时，将使用默认以上行为。
-当使用PHP 5.6以下版本的流时，Guzzle将按以下顺序尝试查找CA包：
-
-1. 检查 ``php.ini`` 文件中是否设置了 ``openssl.cafile``。
-2. 检查 ``php.ini`` 文件中是否设置了 ``curl.cainfo``。
-3. 检查 ``/etc/pki/tls/certs/ca-bundle.crt``
-   是否存在 (Red Hat, CentOS, Fedora; 由 ``ca-certificates`` 包提供)
-4. 检查 ``/etc/ssl/certs/ca-certificates.crt``
-   是否存在 (Ubuntu, Debian; 由 ``ca-certificates`` 包提供)
-5. 检查 ``/usr/local/share/certs/ca-root-nss.crt`` 是否存在 (FreeBSD; 由 ``ca_root_nss`` 包提供)
-6. 检查 ``/usr/local/etc/openssl/cert.pem`` 是否存在 (OS X; 由 ``homebrew`` 提供)
-7. 检查 ``C:\windows\system32\curl-ca-bundle.crt`` 是否存在 (Windows)
-8. 检查 ``C:\windows\curl-ca-bundle.crt`` 是否存在 (Windows)
-
-查找的结果将缓存在内存中，以便同一进程后续快速调用。
-然而在有些服务器如Apache中每个请求都在独立的进程中，你应该考虑设置 ``openssl.cafile``
-环境变量来指定到磁盘文件，以便整个过程都跳过。
-
 如果你不需要特殊的证书包，可以使用Mozilla提供的通用CA包，你可以在
-`这里 <https://raw.githubusercontent.com/bagder/ca-bundle/master/ca-bundle.crt>`_
-下载(由cURL的维护者提供)。一旦磁盘有了CA包，你可以设置PHP ini配置文件，指定该文件的路径到变量
+`这里 <https://curl.haxx.se/ca/cacert.pem>`_
+下载（由cURL的维护者提供）。一旦磁盘有了CA包，你可以设置PHP ini配置文件，指定该文件的路径到变量
 ``openssl.cafile`` 中，这样就可以在请求中省略 ``verify`` 参数。你可以在
 `cURL 网站 <http://curl.haxx.se/docs/sslcerts.html>`_
 发现更多关于SSL证书的细节。
@@ -936,7 +966,7 @@ verify
 timeout
 -------
 
-:摘要: 请求超时的秒数。使用 ``0`` 标识无限期的等待(默认行为)。
+:摘要: 请求总超时的秒数。使用 ``0`` 标识无限期的等待（默认行为）。
 :类型: 浮点
 :默认值: ``0``
 :常量: ``GuzzleHttp\RequestOptions::TIMEOUT``
@@ -945,7 +975,7 @@ timeout
 
     // 如果服务器在3.14秒内没有返回响应，则超时。
     $client->request('GET', '/delay/5', ['timeout' => 3.14]);
-    // PHP致命错误：Uncaught exception 'GuzzleHttp\Exception\RequestException'
+    // PHP致命错误：Uncaught exception 'GuzzleHttp\Exception\TransferException'
 
 .. _version-option:
 

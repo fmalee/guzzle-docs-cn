@@ -5,7 +5,7 @@
 需求
 ============
 
-#. PHP 5.5.0
+#. PHP 7.2.5
 #. 使用PHP的流处理器时， ``allow_url_fopen`` 必须在php.ini中启用。
 #. 要使用cURL处理器时，你必须已经有版本cURL >= 7.19.4，并且编译了OpenSSL 与 zlib。
 
@@ -19,18 +19,18 @@
 安装
 ============
 
-推荐使用 `Composer <http://getcomposer.org>`_ 来安装Guzzle，Composer是PHP的依赖管理工具，允许你在项目中声明依赖关系，并安装这些依赖。
+推荐使用 `Composer <https://getcomposer.org>`_ 来安装Guzzle，Composer是PHP的依赖管理工具，允许你在项目中声明依赖关系，并安装这些依赖。
 
 .. code-block:: bash
 
     # 安装 Composer
     curl -sS https://getcomposer.org/installer | php
 
-你可以使用 ``composer.phar`` 客户端将Guzzle作为依赖添加到项目：
+你可以使用Composer客户端将Guzzle作为依赖添加到项目：
 
 .. code-block:: bash
 
-    php composer.phar require guzzlehttp/guzzle:~6.0
+    composer require guzzlehttp/guzzle:^7.0
 
 或者，你可以编辑项目中已存在的 ```composer.json`` 文件，添加 ``Guzzle`` 作为依赖：
 
@@ -38,7 +38,7 @@
 
     {
       "require": {
-         "guzzlehttp/guzzle": "~6.0"
+         "guzzlehttp/guzzle": "^7.0"
       }
    }
 
@@ -48,26 +48,34 @@
 
     require 'vendor/autoload.php';
 
-你可以在 `getcomposer.org <http://getcomposer.org>`_
+你可以在 `getcomposer.org <https://getcomposer.org>`_
 发现更多关于怎样安装Composer、配置自动加载以及其他有用的东西。
 
 开发版
 -------------
 
-开发期间，你也可以安装 ``master`` 分支下的最新内容，只需要将Guzzle版本设置成 ``~6.0@dev``：
+开发期间，你也可以安装 ``master`` 分支下的最新内容，只需要将Guzzle版本设置成 ``^7.0@dev``：
 
 .. code-block:: js
 
    {
       "require": {
-         "guzzlehttp/guzzle": "~6.0@dev"
+         "guzzlehttp/guzzle": "^7.0@dev"
       }
    }
+
+
+升级
+=========
+Git存储库包含一个 `升级指南`__，详细说明了主要版本之间的变更。
+
+__ https://github.com/guzzle/guzzle/blob/master/UPGRADING.md
+
 
 许可证
 =======
 
-使用基于 `MIT许可 <http://opensource.org/licenses/MIT>`_ 的许可证.
+使用基于 `MIT许可 <https://opensource.org/licenses/MIT>`_ 的许可证.
 
     Copyright (c) 2015 Michael Dowling <https://github.com/mtdowling>
 
@@ -97,7 +105,7 @@
 
 1. Guzzle使用PSR-1，PSR-2，PSR-4和PSR-7。
 2. Guzzle意味着精简和快速，并且只有很少的依赖。这意味着不会接受每个功能请求。
-3. Guzzle具有PHP 5.5的最低PHP版本要求。拉取请求不得要求PHP版本大于PHP 5.5，除非可以有条件地使用该功能。
+3. Guzzle具有PHP 7.2的最低PHP版本要求。拉取请求不得要求PHP版本大于PHP 7.2，除非可以有条件地使用该功能，并且文件可以被PHP 7.2解析。
 4. 所有拉取请求必须包括单元测试，以确保更改按预期工作并防止回归(regression)。
 
 测试
@@ -108,7 +116,7 @@
 .. code-block:: bash
 
     git clone https://github.com/guzzle/guzzle.git
-    cd guzzle && curl -s http://getcomposer.org/installer | php && ./composer.phar install --dev
+    cd guzzle && composer install
 
 Guzzle是使用PHPUnit进行单元测试的。使用Makefile来运行测试：
 
@@ -118,14 +126,14 @@ Guzzle是使用PHPUnit进行单元测试的。使用Makefile来运行测试：
 
 .. note::
 
-    你需要安装node.js v0.5.0或更高版本才能对Guzzle的HTTP处理器执行集成测试。
+    你需要安装node.js v8或更高版本才能对Guzzle的HTTP处理器执行集成测试。
 
 报告安全漏洞
 ==================================
 
 我们希望确保Guzzle是一个适合每个人的安全的HTTP客户端库。
 如果你在Guzzle中发现了一个安全漏洞，我们非常希望你以
-`负责任的方式 <http://en.wikipedia.org/wiki/Responsible_disclosure>`_
+`负责任的方式 <https://en.wikipedia.org/wiki/Responsible_disclosure>`_
 向我们披露此漏洞。
 
 公开披露漏洞可能会使整个社区面临风险。如果你发现了安全问题，请发送电子邮件至security@guzzlephp.org。

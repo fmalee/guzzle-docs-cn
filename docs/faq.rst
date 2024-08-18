@@ -6,7 +6,7 @@ Guzzle必须要cURL吗？
 =========================
 
 不需要。Guzzle可以使用任何HTTP处理器来发送请求。
-这意味着Guzzle可以与cURL、PHP的流封装器、套接字和非阻塞库（如 `React <http://reactphp.org/>`_）一起使用。
+这意味着Guzzle可以与cURL、PHP的流封装器、套接字和非阻塞库（如 `React <https://reactphp.org/>`_）一起使用。
 你只需要配置一个HTTP处理器以使用不同的发送请求的方法。
 
 .. note::
@@ -41,7 +41,7 @@ Guzzle可以发送异步请求吗？
 如何添加自定义cURL选项？
 ==================================
 
-cURL提供大量的 `可自定义选项 <http://us1.php.net/curl_setopt>`_。
+cURL提供大量的 `可自定义选项 <https://us1.php.net/curl_setopt>`_。
 虽然Guzzle在不同处理器中规范化(normalize)了许多这些选项，但有时你需要设置自定义cURL选项。
 这可以通过在请求的 **curl** 键中传递cURL设置的关联数组来实现。
 
@@ -60,9 +60,9 @@ cURL提供大量的 `可自定义选项 <http://us1.php.net/curl_setopt>`_。
 
 .. code-block:: php
 
-    use \GuzzleHttp\Client;
-    use \GuzzleHttp\HandlerStack;
-    use \GuzzleHttp\Handler\CurlMultiHandler;
+    use GuzzleHttp\Client;
+    use GuzzleHttp\HandlerStack;
+    use GuzzleHttp\Handler\CurlMultiHandler;
 
     $client = new Client(['handler' => HandlerStack::create(new CurlMultiHandler([
         'options' => [
@@ -76,7 +76,7 @@ cURL提供大量的 `可自定义选项 <http://us1.php.net/curl_setopt>`_。
 ============================================
 
 你可以使用请求选项的 **stream_context** 键来传递自定义的
-`流上下文选项 <http://www.php.net/manual/en/context.php>`_。
+`流上下文选项 <https://www.php.net/manual/en/context.php>`_。
 所述 ``stream_context`` 数组是一个关联数组，其中每个键是一个PHP传输，每个值是传输数组项。
 
 例如，假设你需要自定义与客户端一起使用的传出网络接口，并允许自签名证书。
