@@ -108,7 +108,7 @@ allow_redirects
 
 .. note::
 
-    当使用 ``GuzzleHttp\Client::sendRequest()`` 发出请求时，此选项 **没有** 无效。
+    当使用 ``GuzzleHttp\Client::sendRequest()`` 发出请求时，此选项 **不会** 生效。
     为了符合PSR-18，任何重定向响应都会按原样返回。
 
 
